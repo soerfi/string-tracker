@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Mail, Phone, Activity, Edit2, Trash2, QrCode, ChevronRight, X, Plus, Camera } from 'lucide-react';
+import { QRScanner } from './QRScanner';
 
 interface PlayerType {
   id: string;
@@ -50,27 +51,11 @@ export function AdminCustomersClient({ initialPlayers }: { initialPlayers: Playe
   const [newCustomer, setNewCustomer] = useState({ name: '', email: '', phone: '' });
   const [isAddingCustomerSave, setIsAddingCustomerSave] = useState(false);
 
-  useEffect(() => {
-    let scannerInstance: { clear: () => Promise<void> } | null = null;
-    if (isScanning) {
-      import('html5-qrcode').then(({ Html5QrcodeScanner }) => {
-        const scanner = new Html5QrcodeScanner("reader-crm", { fps: 10, qrbox: {width: 250, height: 250} }, false);
-        scannerInstance = scanner;
-        scanner.render(
-          (decodedText: string) => {
-            const token = decodedText.split('/').pop() || decodedText;
-            setScannedToken(token);
-            scanner.clear();
-            setIsScanning(false);
-          },
-          () => {} // ignore errors
-        );
-      });
-      return () => {
-        if (scannerInstance) scannerInstance.clear().catch(console.error);
-      }
-    }
-  }, [isScanning]);
+  const handleScan = (decodedText: string) => {
+    const token = decodedText.split('/').pop() || decodedText;
+    setScannedToken(token);
+    setIsScanning(false);
+  };
 
   const startEdit = (player: PlayerType) => {
     setEditingId(player.id);
@@ -357,13 +342,11 @@ export function AdminCustomersClient({ initialPlayers }: { initialPlayers: Playe
                     </div>
 
                     {isScanning && (
-                      <div className="mb-4 bg-black p-2 rounded-xl border border-[#10b981]/30">
-                        <div className="flex justify-between items-center mb-2 px-2">
-                          <span className="text-xs text-[#10b981] font-bold">QR Aufkleber scannen</span>
-                          <button onClick={() => setIsScanning(false)} className="text-gray-400 hover:text-white"><X className="w-4 h-4" /></button>
-                        </div>
-                        <div id="reader-crm" className="w-full rounded-lg overflow-hidden"></div>
-                      </div>
+                      <QRScanner 
+                        onScan={handleScan}
+                        onClose={() => setIsScanning(false)}
+                        title="QR Aufkleber scannen"
+                      />
                     )}
 
                     {!isScanning && (

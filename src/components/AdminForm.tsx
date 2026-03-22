@@ -5,6 +5,7 @@ import { Camera, ChevronRight, X, CheckCircle2 } from 'lucide-react';
 import { motion, useAnimation, PanInfo } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { QRScanner } from './QRScanner';
 
 export function AdminForm({ 
   strings, 
@@ -81,51 +82,31 @@ export function AdminForm({
     }
   }
 
-  useEffect(() => {
-    let scannerInstance: { clear: () => Promise<void> } | null = null;
-
-    if (isScanning) {
-      import('html5-qrcode').then(({ Html5QrcodeScanner }) => {
-        const scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
-        scannerInstance = scanner;
-        scanner.render(
-          (decodedText: string) => {
-            const token = decodedText.split('/').pop() || decodedText;
-            
-            let found = false;
-            for (const p of players) {
-              const matchedRacket = p.rackets?.find(r => r.qrCodeToken === token);
-              if (matchedRacket) {
-                setCustomerId(p.id);
-                setPlayerName(p.name);
-                setEmail(p.email || "");
-                setPhone(p.phone || "");
-                
-                setRacketId(matchedRacket.id);
-                setRacketBrand(matchedRacket.brand);
-                setRacketModel(matchedRacket.model);
-                
-                found = true;
-                break;
-              }
-            }
-            
-            scanner.clear();
-            setIsScanning(false);
-            
-            if (!found) alert("Dieser QR Code ist leider nicht im System als Racket registriert.");
-          },
-          () => {
-            // ignored
-          }
-        );
-      });
-      
-      return () => {
-        if (scannerInstance) scannerInstance.clear().catch(console.error);
+  const handleScan = (decodedText: string) => {
+    const token = decodedText.split('/').pop() || decodedText;
+    
+    let found = false;
+    for (const p of players) {
+      const matchedRacket = p.rackets?.find(r => r.qrCodeToken === token);
+      if (matchedRacket) {
+        setCustomerId(p.id);
+        setPlayerName(p.name);
+        setEmail(p.email || "");
+        setPhone(p.phone || "");
+        
+        setRacketId(matchedRacket.id);
+        setRacketBrand(matchedRacket.brand);
+        setRacketModel(matchedRacket.model);
+        
+        found = true;
+        break;
       }
     }
-  }, [isScanning, players]);
+    
+    setIsScanning(false);
+    
+    if (!found) alert("Dieser QR Code ist leider nicht im System als Racket registriert.");
+  };
 
   // String details
   const [stringId, setStringId] = useState("");
@@ -229,13 +210,11 @@ export function AdminForm({
   return (
     <div className="max-w-md mx-auto flex flex-col gap-6 pb-28 px-2 font-sans relative">
       {isScanning && (
-        <div className="fixed inset-0 z-50 bg-[#0a0a0a] flex flex-col items-center justify-center p-4">
-           <button onClick={() => setIsScanning(false)} className="absolute top-8 right-8 text-white bg-white/10 p-3 rounded-full hover:bg-red-500 transition border border-white/20 z-50">
-             <X className="w-6 h-6" />
-           </button>
-           <h2 className="text-xl font-bold mb-4">Racket QR Code scannen</h2>
-           <div id="reader" className="w-full max-w-md rounded-3xl overflow-hidden bg-black border border-white/20"></div>
-        </div>
+        <QRScanner 
+          onScan={handleScan} 
+          onClose={() => setIsScanning(false)} 
+          title="Racket QR scannen" 
+        />
       )}
 
       <header className="flex items-center gap-4 mt-8 mb-2">
