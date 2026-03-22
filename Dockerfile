@@ -16,7 +16,9 @@ COPY . .
 
 # Generate Prisma Client and create a dummy db for build phase
 # (Next.js 15 might attempt to pre-render pages needing db schema check)
+ENV DATABASE_URL="file:./dev.db"
 RUN npx prisma generate
+RUN npx prisma db push --accept-data-loss
 RUN npm run build
 
 # Stage 2: Production runner
