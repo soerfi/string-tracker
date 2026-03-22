@@ -67,7 +67,7 @@ export function QRScanner({ onScan, onClose, title = "QR Code scannen" }: QRScan
         </div>
 
         {/* Scanner Engine */}
-        <div className="absolute inset-0 z-10 mix-blend-lighten [&>div>video]:object-cover">
+        <div className="absolute inset-0 z-10 bg-black [&>div>video]:object-cover">
           {!errorStatus && (
             <Scanner
               onScan={handleScan}
