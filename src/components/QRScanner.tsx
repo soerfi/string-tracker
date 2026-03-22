@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { X, Camera, RefreshCw } from 'lucide-react';
 
@@ -70,8 +71,13 @@ export function QRScanner({ onScan, onClose, title = "QR Code scannen" }: QRScan
     };
   }, [onScan]);
 
-  return (
-    <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-4 animate-in fade-in duration-300">
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const content = (
+    <div className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-4 animate-in fade-in duration-300">
       {/* Header Controls */}
       <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-10">
         <div className="text-white font-black tracking-tight flex items-center gap-2">
@@ -145,4 +151,7 @@ export function QRScanner({ onScan, onClose, title = "QR Code scannen" }: QRScan
       `}} />
     </div>
   );
+
+  if (!mounted) return null;
+  return createPortal(content, document.body);
 }
