@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { X, Camera, RefreshCw } from 'lucide-react';
@@ -14,6 +14,11 @@ interface QRScannerProps {
 export function QRScanner({ onScan, onClose, title = "QR Code scannen" }: QRScannerProps) {
   const [errorStatus, setErrorStatus] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
+
+  const onScanRef = useRef(onScan);
+  useEffect(() => {
+    onScanRef.current = onScan;
+  }, [onScan]);
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -31,12 +36,17 @@ export function QRScanner({ onScan, onClose, title = "QR Code scannen" }: QRScan
         // Initialize headless scanner
         html5QrCode = new Html5Qrcode("pro-max-scanner-container", {
           formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
-          verbose: false
+          verbose: false,
+          experimentalFeatures: {
+            useBarCodeDetectorIfSupported: true
+          }
         } as any);
 
         // Config optimized for responsive mobile scanning
         const config = {
-          fps: 10
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+          disableFlip: false // allow scanning mirrored/inverted if handled by native API
         };
 
         await html5QrCode.start(
@@ -50,7 +60,7 @@ export function QRScanner({ onScan, onClose, title = "QR Code scannen" }: QRScan
                   html5QrCode.pause();
                 }
               } catch (e) {}
-              onScan(decodedText);
+              onScanRef.current(decodedText);
             }
           },
           () => {
@@ -82,7 +92,7 @@ export function QRScanner({ onScan, onClose, title = "QR Code scannen" }: QRScan
         }
       }
     };
-  }, [onScan, mounted]);
+  }, [mounted]);
 
   const content = (
     <div className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-4 animate-in fade-in duration-300">
