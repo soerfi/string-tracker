@@ -1,6 +1,6 @@
-# Smart Inventory (AceTrace) - AI System Instructions
+# String Tracker - AI System Instructions
 
-Welcome, future AI! You are working on "AceTrace", a modern Next.js CRM designed specifically for tennis stringers to manage customers, string inventory, and calculate physical string decay over time. 
+Welcome, future AI! You are working on "String Tracker", a modern Next.js CRM designed specifically for tennis stringers to manage customers, string inventory, and calculate physical string decay over time. 
 
 ## 🛠 Tech Stack
 - **Framework**: Next.js 15 (App Router)

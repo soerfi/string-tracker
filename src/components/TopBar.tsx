@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Menu, X, Activity, Users, Settings, Plus, Home } from 'lucide-react';
+import { Menu, X, Activity, User, Briefcase, Settings, ArrowRight, Layers, Trophy, Home, Plus, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -12,11 +12,15 @@ export function TopBar() {
   return (
     <>
       <header className="flex items-center justify-between mb-8 relative z-50">
-        <Link href="/admin" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <div className="w-8 h-8 rounded bg-[#10b981] flex items-center justify-center">
-            <Activity className="w-5 h-5 text-[#0a0a0a]" strokeWidth={3} />
+        <Link href="/admin" className="flex items-center gap-3 active:scale-95 transition-transform group">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#10b981] to-[#047857] flex items-center justify-center shadow-lg shadow-[#10b981]/20 group-hover:shadow-[#10b981]/40 transition-shadow">
+             <Trophy className="w-5 h-5 text-gray-950" />
           </div>
-          <span className="text-xl font-bold tracking-tight">AceTrace</span>
+          <div>
+            <div className="font-black text-xl tracking-tight text-white group-hover:text-[#10b981] transition-colors">
+              String Tracker
+            </div>
+          </div>
         </Link>
         <button onClick={() => setIsOpen(!isOpen)} className="p-2 -mr-2 text-gray-300 hover:text-white transition">
           {isOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}

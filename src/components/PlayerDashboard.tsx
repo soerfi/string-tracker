@@ -64,7 +64,7 @@ export function PlayerDashboard({
         <div className="flex justify-center mb-6">
           <div className="p-3 bg-white rounded-3xl shadow-[0_0_30px_rgba(255,255,255,0.1)] inline-block">
             <img 
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(`https://acetrace.tcg-grueze.ch/player/${qrCodeToken}`)}`} 
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(`https://string-tracker.tcg-grueze.ch/player/${qrCodeToken}`)}`} 
               alt="Racket QR" 
               className="w-24 h-24"
             />

@@ -20,7 +20,7 @@ export default function SettingsPage() {
         <div className="bg-[#161616] border border-white/5 rounded-3xl p-6 shadow-lg">
           <h2 className="text-[11px] font-bold tracking-widest text-[#10b981] uppercase mb-4">Konto</h2>
           <div className="text-lg font-bold">Admin</div>
-          <div className="text-sm text-gray-500 mb-6">admin@acetrace.com</div>
+          <div className="text-sm text-gray-500 mb-6">admin@stringtracker.com</div>
           
           <button className="flex items-center gap-3 text-red-400 hover:text-red-300 transition font-bold text-sm bg-red-400/10 px-4 py-3 rounded-xl w-full justify-center">
             <LogOut className="w-5 h-5" /> Abmelden
