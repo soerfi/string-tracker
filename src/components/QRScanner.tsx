@@ -44,10 +44,12 @@ export function QRScanner({ onScan, onClose, title = "QR Code scannen" }: QRScan
           config,
           (decodedText) => {
             if (isComponentMounted) {
-              // Pause scanning immediately to prevent duplicate scans
-              if (html5QrCode && html5QrCode.isScanning) {
-                html5QrCode.pause();
-              }
+              // Gracefully pause if possible, but prioritize notifying parent
+              try {
+                if (html5QrCode && typeof html5QrCode.pause === 'function') {
+                  html5QrCode.pause();
+                }
+              } catch (e) {}
               onScan(decodedText);
             }
           },
@@ -72,9 +74,12 @@ export function QRScanner({ onScan, onClose, title = "QR Code scannen" }: QRScan
 
     return () => {
       isComponentMounted = false;
-      if (html5QrCode && html5QrCode.isScanning) {
-        // Stop scanning when unmounting
-        html5QrCode.stop().catch(console.error);
+      if (html5QrCode) {
+        try {
+          html5QrCode.stop().catch(() => {});
+        } catch (e) {
+          // ignore
+        }
       }
     };
   }, [onScan, mounted]);
