@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  string-tracker:
+    build: .
+    container_name: string-tracker-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL="file:/app/data/prod.db"
+      - ADMIN_PASSWORD=tca2026
+    volumes:
+      - string-tracker-data:/app/data
+
+volumes:
+  string-tracker-data:

@@ -4,7 +4,9 @@ export async function POST(req: Request) {
   try {
     const { password } = await req.json();
 
-    if (password === 'tca2026') {
+    const expectedPassword = process.env.ADMIN_PASSWORD || 'tca2026';
+
+    if (password === expectedPassword) {
       const response = NextResponse.json({ success: true });
       
       // Set HttpOnly cookie for extremely simple authentication
