@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Player {
+  id               String      @id @default(uuid())
+  name             String
+  email            String?
+  phone            String?
+  racketBrand      String?
+  racketModel      String?
+  weeklyFrequency  Int         @default(3)
+  skillMultiplier  Float       @default(1.0)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  jobs             StringJob[]
+  rackets          Racket[]
+}
+
+model Racket {
+  id              String      @id @default(uuid())
+  brand           String
+  model           String
+  color           String?
+  notes           String?
+  qrCodeToken     String      @unique @default(uuid())
+  playerId        String
+  player          Player      @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  jobs            StringJob[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model TennisString {
+  id              String      @id @default(cuid())
+  brand           String
+  model           String
+  gauge           String
+  type            String
+  baseLifeHours   Float
+  descriptionDe   String
+  benefits        String      // JSON stringified array since SQLite lacks String[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  jobs            StringJob[]
+}
+
+model StringJob {
+  id              String   @id @default(cuid())
+  playerId        String
+  player          Player   @relation(fields: [playerId], references: [id])
+  racketId        String?
+  racket          Racket?  @relation(fields: [racketId], references: [id], onDelete: SetNull)
+  stringId        String
+  string          TennisString   @relation(fields: [stringId], references: [id])
+  stringDate      DateTime @default(now())
+  tensionMain     Float?
+  tensionCross    Float?
+  price           Float?   @default(50.0)
+  notes           String?
+  racketBrand     String?
+  racketModel     String?
+  deadline        DateTime?
+  grommetsOk      Boolean  @default(true)
+  gripOk          Boolean  @default(true)
+  changeOvergrip  Boolean  @default(false)
+  isPaid          Boolean  @default(false)
+  status          String   @default("PENDING")
+  qrCodeToken     String   @unique
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
