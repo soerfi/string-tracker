@@ -28,9 +28,7 @@ export function QRScanner({ onScan, onClose, title = "QR Code scannen" }: QRScan
 
         // Config optimized for responsive mobile scanning
         const config = {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
-          aspectRatio: 1.0, 
+          fps: 10
         };
 
         await html5QrCode.start(
