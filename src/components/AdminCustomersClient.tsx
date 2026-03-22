@@ -52,9 +52,6 @@ export function AdminCustomersClient({ initialPlayers }: { initialPlayers: Playe
   const [isAddingCustomerSave, setIsAddingCustomerSave] = useState(false);
 
   const handleScan = (decodedText: string) => {
-    // DIAGNOSTIC ALERT
-    alert("SYSTEM DIAGNOSE: Scanner hat Code erkannt: " + decodedText);
-    
     const token = decodedText.split('/').pop() || decodedText;
     setScannedToken(token);
     setIsScanning(false);
@@ -319,9 +316,9 @@ export function AdminCustomersClient({ initialPlayers }: { initialPlayers: Playe
                           <div className="text-xs text-gray-500 mt-2">Hinzugefügt: {new Date(racket.createdAt).toLocaleDateString('de-CH')}</div>
                         </div>
                         <img 
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(typeof window !== "undefined" ? window.location.origin + "/player/" + racket.qrCodeToken : "")}&bgcolor=161616&color=10b981`}
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(typeof window !== "undefined" ? window.location.origin + "/player/" + racket.qrCodeToken : "")}&margin=1`}
                           alt="QR Code"
-                          className="w-20 h-20 rounded-xl bg-[#161616] border border-[#10b981]/30 p-1.5 shrink-0" 
+                          className="w-20 h-20 rounded-xl bg-white border border-[#10b981]/30 p-1 shrink-0" 
                         />
                       </div>
                       
