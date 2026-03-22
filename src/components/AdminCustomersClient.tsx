@@ -52,6 +52,9 @@ export function AdminCustomersClient({ initialPlayers }: { initialPlayers: Playe
   const [isAddingCustomerSave, setIsAddingCustomerSave] = useState(false);
 
   const handleScan = (decodedText: string) => {
+    // DIAGNOSTIC ALERT
+    alert("SYSTEM DIAGNOSE: Scanner hat Code erkannt: " + decodedText);
+    
     const token = decodedText.split('/').pop() || decodedText;
     setScannedToken(token);
     setIsScanning(false);
@@ -167,10 +170,13 @@ export function AdminCustomersClient({ initialPlayers }: { initialPlayers: Playe
         setPlayers([fullPlayer, ...players]);
         setNewCustomer({ name: '', email: '', phone: '' });
         setIsAddingCustomer(false);
+      } else {
+        const errText = await res.text();
+        alert("Server Fehler beim Speichern: " + errText);
       }
     } catch(e) {
       console.error(e);
-      alert("Fehler beim Erstellen");
+      alert("Netzwerkfehler beim Erstellen.");
     }
     setIsAddingCustomerSave(false);
   };
