@@ -15,7 +15,14 @@ export function QRScanner({ onScan, onClose, title = "QR Code scannen" }: QRScan
   const [errorStatus, setErrorStatus] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
 
+  const [mounted, setMounted] = useState(false);
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
     let html5QrCode: Html5Qrcode | null = null;
     let isComponentMounted = true;
 
@@ -60,7 +67,8 @@ export function QRScanner({ onScan, onClose, title = "QR Code scannen" }: QRScan
       }
     };
 
-    startScanner();
+    // Small delay to ensure React commits the DOM node before Html5Qrcode searches for it
+    setTimeout(startScanner, 50);
 
     return () => {
       isComponentMounted = false;
@@ -69,12 +77,7 @@ export function QRScanner({ onScan, onClose, title = "QR Code scannen" }: QRScan
         html5QrCode.stop().catch(console.error);
       }
     };
-  }, [onScan]);
-
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  }, [onScan, mounted]);
 
   const content = (
     <div className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-4 animate-in fade-in duration-300">
