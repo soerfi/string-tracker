@@ -3,6 +3,8 @@ import { Users } from 'lucide-react'
 import { TopBar } from '@/components/TopBar'
 import { AdminCustomersClient } from '@/components/AdminCustomersClient'
 
+export const dynamic = 'force-dynamic';
+
 const prisma = new PrismaClient()
 
 export default async function CustomersPage() {
