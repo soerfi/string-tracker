@@ -67,21 +67,22 @@ export function QRScanner({ onScan, onClose, title = "QR Code scannen" }: QRScan
         </div>
 
         {/* Scanner Engine */}
-        <div className="absolute inset-0 z-10 bg-black [&>div>video]:object-cover">
+        <div className="absolute inset-0 z-10 bg-black flex items-center justify-center overflow-hidden">
           {!errorStatus && (
-            <Scanner
-              onScan={handleScan}
-              onError={(error: any) => {
-                console.error("Scanner Error:", error?.message);
-                if (error?.message?.includes("Permission") || error?.name === "NotAllowedError" || error?.name === "NotFoundError") {
-                  setErrorStatus("Kamera konnte nicht gestartet werden. Bitte erlaube den Zugriff.");
-                }
-              }}
-              formats={['qr_code']}
-              components={{
-                finder: false, // We use our own UI overlay below
-              }}
-            />
+            <div className="w-full h-full relative">
+              <Scanner
+                onScan={handleScan}
+                onError={(error: any) => {
+                  console.error("Scanner Error:", error?.message);
+                  if (error?.message?.includes("Permission") || error?.name === "NotAllowedError" || error?.name === "NotFoundError") {
+                    setErrorStatus("Kamera konnte nicht gestartet werden. Bitte erlaube den Zugriff.");
+                  }
+                }}
+                components={{
+                  finder: false, // We use our own UI overlay below
+                }}
+              />
+            </div>
           )}
         </div>
 
