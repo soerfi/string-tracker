@@ -9,7 +9,7 @@ services:
       - "3000:3000"
     environment:
       - DATABASE_URL=file:/app/data/prod.db
-      - ADMIN_PASSWORD=tca2026
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-tca2026}
     volumes:
       - string-tracker-data:/app/data
 
