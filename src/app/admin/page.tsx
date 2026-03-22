@@ -4,6 +4,8 @@ import { AdminJobsClient } from '@/components/AdminJobsClient'
 
 const prisma = new PrismaClient()
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminDashboard() {
   const playersCount = await prisma.player.count();
   const stringsCount = await prisma.tennisString.count();

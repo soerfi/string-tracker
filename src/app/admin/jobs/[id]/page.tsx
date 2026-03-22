@@ -4,6 +4,8 @@ import { JobEditClient } from './JobEditClient'
 
 const prisma = new PrismaClient()
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminJobDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   
