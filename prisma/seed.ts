@@ -59,14 +59,7 @@ async function main() {
     })
   }
   
-  // Create a default test player
-  await prisma.player.create({
-    data: {
-      name: "Test Player",
-      weeklyFrequency: 4,
-      skillMultiplier: 1.0,
-    }
-  })
+  // No default test players in production
   
   console.log('Seeding finished.')
 }
