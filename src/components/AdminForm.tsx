@@ -37,13 +37,15 @@ export function AdminForm({
   const [racketBrand, setRacketBrand] = useState("");
   const [racketModel, setRacketModel] = useState("");
   
-  const selectedPlayerRackets = players.find(p => p.id === customerId)?.rackets || [];
+  const [localPlayers, setLocalPlayers] = useState(players);
+
+  const selectedPlayerRackets = localPlayers.find(p => p.id === customerId)?.rackets || [];
 
   const handleCustomerChange = (val: string) => {
     setCustomerId(val);
     setRacketId(""); // reset racket
     if (val !== "new" && val !== "") {
-      const p = players.find(x => x.id === val);
+      const p = localPlayers.find(x => x.id === val);
       if (p) {
         setPlayerName(p.name);
         setEmail(p.email || "");
@@ -82,11 +84,12 @@ export function AdminForm({
     }
   }
 
-  const handleScan = (decodedText: string) => {
+  const handleScan = async (decodedText: string) => {
     const token = decodedText.split('/').pop() || decodedText;
+    setIsScanning(false);
     
     let found = false;
-    for (const p of players) {
+    for (const p of localPlayers) {
       const matchedRacket = p.rackets?.find(r => r.qrCodeToken === token);
       if (matchedRacket) {
         setCustomerId(p.id);
@@ -103,9 +106,46 @@ export function AdminForm({
       }
     }
     
-    setIsScanning(false);
-    
-    if (!found) alert("Dieser QR Code ist leider nicht im System als Racket registriert.");
+    // Live Fallback API Lookup for newly created DB rackets that the Next.js Client Cache missed
+    if (!found) {
+      try {
+        const res = await fetch(`/api/rackets/by-token?token=${token}`);
+        if (res.ok) {
+          const { racket } = await res.json();
+          if (racket && racket.player) {
+            // Hot-Inject the new Racket/Player into local state so the dropdowns sync perfectly
+            setLocalPlayers(prev => {
+              const existingPlayer = prev.find(p => p.id === racket.playerId);
+              if (existingPlayer) {
+                // Add racket to existing player if missing
+                if (!existingPlayer.rackets.some(r => r.id === racket.id)) {
+                  return prev.map(p => p.id === racket.playerId ? { ...p, rackets: [...p.rackets, racket] } : p);
+                }
+                return prev;
+              } else {
+                // Add entirely new player and their racket
+                const newPlayer = { ...racket.player, rackets: [racket] };
+                return [...prev, newPlayer];
+              }
+            });
+
+            // Set Form Data
+            setCustomerId(racket.playerId);
+            setPlayerName(racket.player.name);
+            setEmail(racket.player.email || "");
+            setPhone(racket.player.phone || "");
+            setRacketId(racket.id);
+            setRacketBrand(racket.brand);
+            setRacketModel(racket.model);
+            return; // Success!
+          }
+        }
+      } catch (err) {
+        console.error("Live lookup failed", err);
+      }
+      
+      alert("Dieser QR Code ist leider nicht im System als Racket registriert.");
+    }
   };
 
   // String details
@@ -245,7 +285,7 @@ export function AdminForm({
           >
             <option value="" disabled>Kunde auswählen</option>
             <option value="new">+ Neuer Kunde</option>
-            {players.map(p => (
+            {localPlayers.map(p => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
           </select>

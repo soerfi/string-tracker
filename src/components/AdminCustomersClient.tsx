@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Mail, Phone, Activity, Edit2, Trash2, QrCode, ChevronRight, X, Plus, Camera } from 'lucide-react';
 import { QRScanner } from './QRScanner';
 
@@ -43,9 +44,15 @@ export function AdminCustomersClient({ initialPlayers }: { initialPlayers: Playe
   const [newRacket, setNewRacket] = useState({ brand: '', model: '' });
   const [isAddingRacket, setIsAddingRacket] = useState(false);
   
+  const router = useRouter();
+  
   // Scanning State
   const [isScanning, setIsScanning] = useState(false);
   const [scannedToken, setScannedToken] = useState("");
+  
+  // Edit Racket State
+  const [editingRacketId, setEditingRacketId] = useState<string|null>(null);
+  const [racketForm, setRacketForm] = useState({ brand: '', model: '', qrCodeToken: '' });
 
   const [isAddingCustomer, setIsAddingCustomer] = useState(false);
   const [newCustomer, setNewCustomer] = useState({ name: '', email: '', phone: '' });
@@ -125,6 +132,7 @@ export function AdminCustomersClient({ initialPlayers }: { initialPlayers: Playe
         }));
         setNewRacket({ brand: '', model: '' });
         setScannedToken("");
+        router.refresh();
       } else {
         alert("Fehler beim Hinzufügen des Rackets");
       }
@@ -133,6 +141,31 @@ export function AdminCustomersClient({ initialPlayers }: { initialPlayers: Playe
       alert("Verbindungsfehler");
     }
     setIsAddingRacket(false);
+  };
+
+  const saveRacketEdit = async (playerId: string, racketId: string) => {
+    try {
+      const res = await fetch(`/api/rackets/${racketId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(racketForm)
+      });
+      if (res.ok) {
+        const { racket } = await res.json();
+        setPlayers(prev => prev.map(p => {
+          if (p.id === playerId) {
+            return { ...p, rackets: p.rackets.map(r => r.id === racketId ? { ...r, ...racket } : r) };
+          }
+          return p;
+        }));
+        setEditingRacketId(null);
+        router.refresh();
+      } else {
+        alert("Fehler beim Speichern");
+      }
+    } catch(err) {
+      console.error(err);
+    }
   };
 
   const deleteRacket = async (playerId: string, racketId: string) => {
@@ -308,18 +341,36 @@ export function AdminCustomersClient({ initialPlayers }: { initialPlayers: Playe
 
                   {activePlayer.rackets && activePlayer.rackets.map(racket => (
                     <div key={racket.id} className="flex flex-col gap-3 bg-[#161616] border border-[#10b981]/20 rounded-2xl p-4 shadow-sm relative overflow-hidden">
-                      <div className="flex items-start gap-4 justify-between relative z-10">
-                        <div>
-                          <div className="font-bold text-xl text-white tracking-tight">{racket.brand} {racket.model}</div>
-                          {racket.color && <div className="text-sm text-[#10b981] font-bold mt-0.5">{racket.color}</div>}
-                          {racket.notes && <div className="text-sm text-gray-400 mt-1 line-clamp-2">{racket.notes}</div>}
-                          <div className="text-xs text-gray-500 mt-2">Hinzugefügt: {new Date(racket.createdAt).toLocaleDateString('de-CH')}</div>
-                        </div>
-                        <img 
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(typeof window !== "undefined" ? window.location.origin + "/player/" + racket.qrCodeToken : "")}&margin=1`}
-                          alt="QR Code"
-                          className="w-20 h-20 rounded-xl bg-white border border-[#10b981]/30 p-1 shrink-0" 
-                        />
+                      <div className="flex items-start gap-4 justify-between relative z-10 w-full">
+                        {editingRacketId === racket.id ? (
+                          <div className="flex-1 space-y-2 pr-4">
+                            <input type="text" value={racketForm.brand} onChange={e => setRacketForm({...racketForm, brand: e.target.value})} className="w-full bg-[#0a0a0a] border border-white/5 rounded-xl px-3 py-2 text-white text-sm" placeholder="Marke" />
+                            <input type="text" value={racketForm.model} onChange={e => setRacketForm({...racketForm, model: e.target.value})} className="w-full bg-[#0a0a0a] border border-white/5 rounded-xl px-3 py-2 text-white text-sm" placeholder="Modell" />
+                            <input type="text" value={racketForm.qrCodeToken} onChange={e => setRacketForm({...racketForm, qrCodeToken: e.target.value})} className="w-full bg-[#0a0a0a] border border-[#10b981]/50 rounded-xl px-3 py-2 text-white text-sm" placeholder="QR Code Token (z.B. RKT-1000)" />
+                            <div className="flex gap-2 pt-1">
+                              <button onClick={() => saveRacketEdit(activePlayer.id, racket.id)} className="bg-[#10b981] text-black px-3 py-1.5 rounded-lg text-xs font-bold w-full hover:bg-[#059669]">Speichern</button>
+                              <button onClick={() => setEditingRacketId(null)} className="bg-white/10 text-white px-3 py-1.5 rounded-lg text-xs font-bold w-full hover:bg-white/20">Abbrechen</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <div className="font-bold text-xl text-white tracking-tight">{racket.brand} {racket.model}</div>
+                              <button onClick={() => { setEditingRacketId(racket.id); setRacketForm({ brand: racket.brand, model: racket.model, qrCodeToken: racket.qrCodeToken }); }} className="text-gray-500 hover:text-[#10b981]"><Edit2 className="w-4 h-4" /></button>
+                            </div>
+                            {racket.color && <div className="text-sm text-[#10b981] font-bold mt-0.5">{racket.color}</div>}
+                            <div className="text-xs text-gray-500 mt-1 font-mono">Code: {racket.qrCodeToken}</div>
+                            {racket.notes && <div className="text-sm text-gray-400 mt-1 line-clamp-2">{racket.notes}</div>}
+                            <div className="text-xs text-gray-500 mt-2">Hinzugefügt: {new Date(racket.createdAt).toLocaleDateString('de-CH')}</div>
+                          </div>
+                        )}
+                        {editingRacketId !== racket.id && (
+                          <img 
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(typeof window !== "undefined" ? window.location.origin + "/player/" + racket.qrCodeToken : "")}&margin=1`}
+                            alt="QR Code"
+                            className="w-20 h-20 rounded-xl bg-white border border-[#10b981]/30 p-1 shrink-0" 
+                          />
+                        )}
                       </div>
                       
                       <div className="relative z-10 flex gap-2 mt-2">
