@@ -3,16 +3,20 @@
 import { useState, useEffect, useRef } from 'react';
 import { calculateDeadDate, calculateHealthPercentage } from '@/lib/decay';
 import { Droplet, Calendar, CheckCircle2, Activity } from 'lucide-react';
-import { useInView, animate, motion } from 'framer-motion';
+import { useInView, animate, motion, useMotionValue } from 'framer-motion';
 
-function Counter({ from, to, play }: { from: number, to: number, play: boolean }) {
+function Counter({ to, play }: { to: number, play: boolean }) {
   const nodeRef = useRef<HTMLSpanElement>(null);
+  const motionVal = useMotionValue(0);
 
   useEffect(() => {
     if (play && nodeRef.current) {
-      const controls = animate(from, to, {
-        duration: 2,
-        ease: "easeOut",
+      const isInitial = motionVal.get() === 0;
+      const controls = animate(motionVal, Math.max(0, to), {
+        type: isInitial ? "tween" : "spring",
+        duration: isInitial ? 2 : undefined,
+        bounce: 0,
+        ease: isInitial ? "easeOut" : undefined,
         onUpdate(value) {
           if (nodeRef.current) {
             nodeRef.current.textContent = String(Math.round(value));
@@ -21,9 +25,9 @@ function Counter({ from, to, play }: { from: number, to: number, play: boolean }
       });
       return () => controls.stop();
     }
-  }, [from, to, play]);
+  }, [to, play, motionVal]);
 
-  return <span ref={nodeRef}>{from}</span>;
+  return <span ref={nodeRef}>0</span>;
 }
 
 export function PlayerDashboard({
@@ -84,7 +88,15 @@ export function PlayerDashboard({
   const daysLeft = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
   const statsRef = useRef(null);
-  const isInView = useInView(statsRef, { once: true, margin: "-100px" });
+  const isInView = useInView(statsRef, { once: true, margin: "0px 0px -25% 0px" });
+  const [hasAnimated, setHasAnimated] = useState(false);
+
+  useEffect(() => {
+    if (isInView && !hasAnimated) {
+      const timer = setTimeout(() => setHasAnimated(true), 2100);
+      return () => clearTimeout(timer);
+    }
+  }, [isInView, hasAnimated]);
 
   // Get static target color depending on health score
   const getHealthColor = (h: number) => {
@@ -152,12 +164,12 @@ export function PlayerDashboard({
                   strokeDashoffset: 283 - (283 * health) / 100,
                   stroke: targetColor 
                 } : {}}
-                transition={{ duration: 2, ease: "easeOut" }}
+                transition={hasAnimated ? { type: "spring", bounce: 0 } : { duration: 2, ease: "easeOut" }}
                 strokeLinecap="round"
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-4xl font-black text-white"><Counter from={0} to={health} play={isInView} />%</span>
+              <span className="text-4xl font-black text-white"><Counter to={health} play={isInView} />%</span>
             </div>
           </div>
         </div>
@@ -170,9 +182,9 @@ export function PlayerDashboard({
                 className="text-3xl font-black" 
                 initial={{ color: '#ef4444' }}
                 animate={isInView ? { color: targetColor } : {}}
-                transition={{ duration: 2, ease: "easeOut" }}
+                transition={hasAnimated ? { type: "spring", bounce: 0 } : { duration: 2, ease: "easeOut" }}
               >
-                <Counter from={0} to={Math.max(0, daysLeft)} play={isInView} /> <span className="text-xl text-gray-500">Tage</span>
+                <Counter to={daysLeft} play={isInView} /> <span className="text-xl text-gray-500">Tage</span>
               </motion.div>
           </div>
           <div className="bg-[#161616] rounded-2xl p-5 border border-white/5 shadow-lg flex flex-col justify-center">
