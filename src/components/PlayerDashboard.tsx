@@ -5,12 +5,11 @@ import { calculateDeadDate, calculateHealthPercentage } from '@/lib/decay';
 import { Droplet, Calendar, CheckCircle2, Activity } from 'lucide-react';
 import { useInView, animate, motion } from 'framer-motion';
 
-function Counter({ from, to }: { from: number, to: number }) {
+function Counter({ from, to, play }: { from: number, to: number, play: boolean }) {
   const nodeRef = useRef<HTMLSpanElement>(null);
-  const inView = useInView(nodeRef, { once: true, margin: "-50px" });
 
   useEffect(() => {
-    if (inView && nodeRef.current) {
+    if (play && nodeRef.current) {
       const controls = animate(from, to, {
         duration: 2,
         ease: "easeOut",
@@ -22,7 +21,7 @@ function Counter({ from, to }: { from: number, to: number }) {
       });
       return () => controls.stop();
     }
-  }, [from, to, inView]);
+  }, [from, to, play]);
 
   return <span ref={nodeRef}>{from}</span>;
 }
@@ -84,6 +83,9 @@ export function PlayerDashboard({
   const diffTime = startOfDeadDate.getTime() - startOfToday.getTime();
   const daysLeft = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
+  const statsRef = useRef(null);
+  const isInView = useInView(statsRef, { once: true, margin: "-100px" });
+
   // Get static target color depending on health score
   const getHealthColor = (h: number) => {
     if (h > 60) return '#10b981'; // Green
@@ -136,7 +138,7 @@ export function PlayerDashboard({
       </div>
 
       {/* Big Gauge & Dates Container with Observer */}
-      <div>
+      <div ref={statsRef}>
         <div className="flex justify-center mt-4">
           <div className="relative w-48 h-48">
             <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
@@ -146,17 +148,16 @@ export function PlayerDashboard({
                 strokeWidth="10" 
                 strokeDasharray="283" 
                 initial={{ strokeDashoffset: 283, stroke: '#ef4444' }}
-                whileInView={{ 
+                animate={isInView ? { 
                   strokeDashoffset: 283 - (283 * health) / 100,
                   stroke: targetColor 
-                }}
+                } : {}}
                 transition={{ duration: 2, ease: "easeOut" }}
-                viewport={{ once: true, margin: "-50px" }}
                 strokeLinecap="round"
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-4xl font-black text-white"><Counter from={0} to={health} />%</span>
+              <span className="text-4xl font-black text-white"><Counter from={0} to={health} play={isInView} />%</span>
             </div>
           </div>
         </div>
@@ -168,11 +169,10 @@ export function PlayerDashboard({
               <motion.div 
                 className="text-3xl font-black" 
                 initial={{ color: '#ef4444' }}
-                whileInView={{ color: targetColor }}
+                animate={isInView ? { color: targetColor } : {}}
                 transition={{ duration: 2, ease: "easeOut" }}
-                viewport={{ once: true, margin: "-50px" }}
               >
-                <Counter from={0} to={Math.max(0, daysLeft)} /> <span className="text-xl text-gray-500">Tage</span>
+                <Counter from={0} to={Math.max(0, daysLeft)} play={isInView} /> <span className="text-xl text-gray-500">Tage</span>
               </motion.div>
           </div>
           <div className="bg-[#161616] rounded-2xl p-5 border border-white/5 shadow-lg flex flex-col justify-center">
