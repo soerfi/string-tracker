@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { calculateDeadDate, calculateHealthPercentage } from '@/lib/decay';
 import { Droplet, Calendar, CheckCircle2, Activity } from 'lucide-react';
 
@@ -61,6 +61,42 @@ export function PlayerDashboard({
   const diffTime = startOfDeadDate.getTime() - startOfToday.getTime();
   const daysLeft = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
+  const [displayHealth, setDisplayHealth] = useState(0);
+  const [displayDays, setDisplayDays] = useState(0);
+
+  useEffect(() => {
+    let startTime: number;
+    const duration = 1500; // 1.5s animation
+
+    const animate = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+
+      setDisplayHealth(health * easeOutQuart);
+      setDisplayDays(Math.max(0, daysLeft) * easeOutQuart);
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+    
+    // Slight delay before starting
+    const timeout = setTimeout(() => {
+      requestAnimationFrame(animate);
+    }, 100);
+    return () => clearTimeout(timeout);
+  }, [health, daysLeft]);
+
+  const getHealthColor = (h: number) => {
+    if (h > 60) return '#10b981'; // Green
+    if (h > 25) return '#f59e0b'; // Amber
+    return '#ef4444'; // Red
+  };
+  
+  const currentColor = getHealthColor(displayHealth);
+
   return (
     <div className="max-w-md mx-auto flex flex-col gap-6 pb-24 font-sans px-2 relative">
       <header className="mt-8 text-center relative">
@@ -80,19 +116,19 @@ export function PlayerDashboard({
       </header>
 
       {/* HUGE String & Tension Display */}
-      <div className="bg-[#10b981] text-gray-950 rounded-3xl p-6 text-center shadow-[0_0_40px_rgba(16,185,129,0.2)] mx-2 mt-2 border border-[#10b981]/50 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 blur-3xl rounded-full -mr-10 -mt-10 pointer-events-none"></div>
-        <div className="text-[10px] font-black tracking-widest uppercase opacity-70 mb-1">Montierte Saite</div>
-        <div className="text-3xl font-black leading-tight tracking-tight mb-4">{stringBrand} <br/> {stringModel}</div>
+      <div className="bg-[#161616] text-white rounded-3xl p-6 text-center shadow-lg mx-2 mt-2 border border-white/5 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-[#10b981]/5 blur-[80px] rounded-full -mr-20 -mt-20 pointer-events-none"></div>
+        <div className="text-[10px] font-black tracking-widest uppercase text-[#10b981] mb-1 relative z-10">Montierte Saite</div>
+        <div className="text-3xl font-black leading-tight tracking-tight mb-4 relative z-10">{stringBrand} <br/> {stringModel}</div>
         
-        <div className="flex items-center justify-center gap-4">
-          <div className="bg-gray-950/10 px-5 py-3 rounded-2xl flex-1 backdrop-blur-sm">
-            <div className="text-[10px] font-black tracking-widest uppercase opacity-70 mb-0.5">Längs</div>
-            <div className="text-2xl font-black">{tensionMain ? tensionMain : '24'} <span className="text-sm">kg</span></div>
+        <div className="flex items-center justify-center gap-4 relative z-10">
+          <div className="bg-[#202020] border border-white/5 px-5 py-3 rounded-2xl flex-1 shadow-sm">
+            <div className="text-[10px] text-gray-400 font-bold tracking-widest uppercase mb-0.5">Längs</div>
+            <div className="text-2xl font-black">{tensionMain ? tensionMain : '24'} <span className="text-sm text-gray-500">kg</span></div>
           </div>
-          <div className="bg-gray-950/10 px-5 py-3 rounded-2xl flex-1 backdrop-blur-sm">
-            <div className="text-[10px] font-black tracking-widest uppercase opacity-70 mb-0.5">Quer</div>
-            <div className="text-2xl font-black">{tensionCross ? tensionCross : '23'} <span className="text-sm">kg</span></div>
+          <div className="bg-[#202020] border border-white/5 px-5 py-3 rounded-2xl flex-1 shadow-sm">
+            <div className="text-[10px] text-gray-400 font-bold tracking-widest uppercase mb-0.5">Quer</div>
+            <div className="text-2xl font-black">{tensionCross ? tensionCross : '23'} <span className="text-sm text-gray-500">kg</span></div>
           </div>
         </div>
 
@@ -110,17 +146,16 @@ export function PlayerDashboard({
             <circle cx="50" cy="50" r="45" fill="none" stroke="#161616" strokeWidth="10" />
             <circle 
               cx="50" cy="50" r="45" fill="none" 
-              stroke="#10b981" 
+              stroke={currentColor} 
               strokeWidth="10" 
               strokeDasharray="283" 
-              strokeDashoffset={283 - (283 * health) / 100}
+              strokeDashoffset={283 - (283 * displayHealth) / 100}
               strokeLinecap="round"
-              className="transition-all duration-1000 ease-out"
+              className="transition-colors duration-200"
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-4xl font-black text-white">{Math.round(health)}%</span>
-            <span className="text-[11px] text-gray-400 font-bold tracking-widest uppercase absolute -bottom-5">Tot</span> {/* Translated Freshness to Tot */}
+            <span className="text-4xl font-black text-white">{Math.round(displayHealth)}%</span>
           </div>
         </div>
       </div>
@@ -129,7 +164,9 @@ export function PlayerDashboard({
       <div className="grid grid-cols-2 gap-4 mt-2">
         <div className="bg-[#161616] rounded-2xl p-5 border border-white/5 shadow-lg">
             <div className="text-[11px] text-gray-400 font-bold uppercase tracking-widest mb-1">Besaiten in</div>
-            <div className="text-3xl font-black text-[#10b981]">{Math.max(0, daysLeft)} <span className="text-xl text-gray-400">Tage</span></div>
+            <div className="text-3xl font-black" style={{ color: currentColor }}>
+              {Math.round(displayDays)} <span className="text-xl text-gray-500">Tage</span>
+            </div>
         </div>
         <div className="bg-[#161616] rounded-2xl p-5 border border-white/5 shadow-lg flex flex-col justify-center">
           <div className="text-[#10b981] font-bold text-sm tracking-tight leading-snug mb-2">
