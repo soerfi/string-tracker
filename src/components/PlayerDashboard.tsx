@@ -143,11 +143,13 @@ export function PlayerDashboard({
               <circle cx="50" cy="50" r="45" fill="none" stroke="#161616" strokeWidth="10" />
               <motion.circle 
                 cx="50" cy="50" r="45" fill="none" 
-                stroke={targetColor} 
                 strokeWidth="10" 
                 strokeDasharray="283" 
-                initial={{ strokeDashoffset: 283 }}
-                whileInView={{ strokeDashoffset: 283 - (283 * health) / 100 }}
+                initial={{ strokeDashoffset: 283, stroke: '#ef4444' }}
+                whileInView={{ 
+                  strokeDashoffset: 283 - (283 * health) / 100,
+                  stroke: targetColor 
+                }}
                 transition={{ duration: 2, ease: "easeOut" }}
                 viewport={{ once: true, margin: "-50px" }}
                 strokeLinecap="round"
@@ -163,9 +165,15 @@ export function PlayerDashboard({
         <div className="grid grid-cols-2 gap-4 mt-2">
           <div className="bg-[#161616] rounded-2xl p-5 border border-white/5 shadow-lg">
               <div className="text-[11px] text-gray-400 font-bold uppercase tracking-widest mb-1">Besaiten in</div>
-              <div className="text-3xl font-black" style={{ color: targetColor }}>
+              <motion.div 
+                className="text-3xl font-black" 
+                initial={{ color: '#ef4444' }}
+                whileInView={{ color: targetColor }}
+                transition={{ duration: 2, ease: "easeOut" }}
+                viewport={{ once: true, margin: "-50px" }}
+              >
                 <Counter from={0} to={Math.max(0, daysLeft)} /> <span className="text-xl text-gray-500">Tage</span>
-              </div>
+              </motion.div>
           </div>
           <div className="bg-[#161616] rounded-2xl p-5 border border-white/5 shadow-lg flex flex-col justify-center">
             <div className="text-[#10b981] font-bold text-sm tracking-tight leading-snug mb-2">
