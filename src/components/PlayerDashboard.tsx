@@ -3,7 +3,29 @@
 import { useState, useEffect, useRef } from 'react';
 import { calculateDeadDate, calculateHealthPercentage } from '@/lib/decay';
 import { Droplet, Calendar, CheckCircle2, Activity } from 'lucide-react';
-import { useInView, animate } from 'framer-motion';
+import { useInView, animate, motion } from 'framer-motion';
+
+function Counter({ from, to }: { from: number, to: number }) {
+  const nodeRef = useRef<HTMLSpanElement>(null);
+  const inView = useInView(nodeRef, { once: true, margin: "-50px" });
+
+  useEffect(() => {
+    if (inView && nodeRef.current) {
+      const controls = animate(from, to, {
+        duration: 2,
+        ease: "easeOut",
+        onUpdate(value) {
+          if (nodeRef.current) {
+            nodeRef.current.textContent = String(Math.round(value));
+          }
+        }
+      });
+      return () => controls.stop();
+    }
+  }, [from, to, inView]);
+
+  return <span ref={nodeRef}>{from}</span>;
+}
 
 export function PlayerDashboard({
   stringDate,
@@ -62,39 +84,14 @@ export function PlayerDashboard({
   const diffTime = startOfDeadDate.getTime() - startOfToday.getTime();
   const daysLeft = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
-  const [displayHealth, setDisplayHealth] = useState(0);
-  const [displayDays, setDisplayDays] = useState(0);
-  
-  const statsRef = useRef(null);
-  const isInView = useInView(statsRef, { once: true, margin: "-50px" });
-
-  useEffect(() => {
-    if (isInView) {
-      const controls1 = animate(0, health, {
-        duration: 2,
-        ease: "easeOut",
-        onUpdate: (v) => setDisplayHealth(v)
-      });
-      const controls2 = animate(0, Math.max(0, daysLeft), {
-        duration: 2,
-        ease: "easeOut",
-        onUpdate: (v) => setDisplayDays(v)
-      });
-
-      return () => {
-        controls1.stop();
-        controls2.stop();
-      };
-    }
-  }, [isInView, health, daysLeft]);
-
+  // Get static target color depending on health score
   const getHealthColor = (h: number) => {
     if (h > 60) return '#10b981'; // Green
     if (h > 25) return '#f59e0b'; // Amber
     return '#ef4444'; // Red
   };
   
-  const currentColor = getHealthColor(displayHealth);
+  const targetColor = getHealthColor(health);
 
   return (
     <div className="max-w-md mx-auto flex flex-col gap-6 pb-24 font-sans px-2 relative">
@@ -121,13 +118,13 @@ export function PlayerDashboard({
         <div className="text-3xl font-black leading-tight tracking-tight mb-4 relative z-10">{stringBrand} <br/> {stringModel}</div>
         
         <div className="flex items-center justify-center gap-4 relative z-10">
-          <div className="bg-[#202020] border border-white/5 px-5 py-3 rounded-2xl flex-1 shadow-sm">
-            <div className="text-[10px] text-gray-400 font-bold tracking-widest uppercase mb-0.5">Längs</div>
-            <div className="text-2xl font-black">{tensionMain ? tensionMain : '24'} <span className="text-sm text-gray-500">kg</span></div>
+          <div className="bg-black/20 border border-[#10b981]/20 px-5 py-3 rounded-2xl flex-1 backdrop-blur-sm">
+            <div className="text-[10px] text-[#10b981]/70 font-bold tracking-widest uppercase mb-0.5">Längs</div>
+            <div className="text-2xl font-black text-white">{tensionMain ? tensionMain : '24'} <span className="text-sm text-gray-400">kg</span></div>
           </div>
-          <div className="bg-[#202020] border border-white/5 px-5 py-3 rounded-2xl flex-1 shadow-sm">
-            <div className="text-[10px] text-gray-400 font-bold tracking-widest uppercase mb-0.5">Quer</div>
-            <div className="text-2xl font-black">{tensionCross ? tensionCross : '23'} <span className="text-sm text-gray-500">kg</span></div>
+          <div className="bg-black/20 border border-[#10b981]/20 px-5 py-3 rounded-2xl flex-1 backdrop-blur-sm">
+            <div className="text-[10px] text-[#10b981]/70 font-bold tracking-widest uppercase mb-0.5">Quer</div>
+            <div className="text-2xl font-black text-white">{tensionCross ? tensionCross : '23'} <span className="text-sm text-gray-400">kg</span></div>
           </div>
         </div>
 
@@ -139,23 +136,25 @@ export function PlayerDashboard({
       </div>
 
       {/* Big Gauge & Dates Container with Observer */}
-      <div ref={statsRef}>
+      <div>
         <div className="flex justify-center mt-4">
           <div className="relative w-48 h-48">
             <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
               <circle cx="50" cy="50" r="45" fill="none" stroke="#161616" strokeWidth="10" />
-              <circle 
+              <motion.circle 
                 cx="50" cy="50" r="45" fill="none" 
-                stroke={currentColor} 
+                stroke={targetColor} 
                 strokeWidth="10" 
                 strokeDasharray="283" 
-                strokeDashoffset={283 - (283 * displayHealth) / 100}
+                initial={{ strokeDashoffset: 283 }}
+                whileInView={{ strokeDashoffset: 283 - (283 * health) / 100 }}
+                transition={{ duration: 2, ease: "easeOut" }}
+                viewport={{ once: true, margin: "-50px" }}
                 strokeLinecap="round"
-                className="transition-colors duration-200"
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-4xl font-black text-white">{Math.round(displayHealth)}%</span>
+              <span className="text-4xl font-black text-white"><Counter from={0} to={health} />%</span>
             </div>
           </div>
         </div>
@@ -164,8 +163,8 @@ export function PlayerDashboard({
         <div className="grid grid-cols-2 gap-4 mt-2">
           <div className="bg-[#161616] rounded-2xl p-5 border border-white/5 shadow-lg">
               <div className="text-[11px] text-gray-400 font-bold uppercase tracking-widest mb-1">Besaiten in</div>
-              <div className="text-3xl font-black" style={{ color: currentColor }}>
-                {Math.round(displayDays)} <span className="text-xl text-gray-500">Tage</span>
+              <div className="text-3xl font-black" style={{ color: targetColor }}>
+                <Counter from={0} to={Math.max(0, daysLeft)} /> <span className="text-xl text-gray-500">Tage</span>
               </div>
           </div>
           <div className="bg-[#161616] rounded-2xl p-5 border border-white/5 shadow-lg flex flex-col justify-center">
