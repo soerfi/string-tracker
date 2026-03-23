@@ -16,7 +16,7 @@ if (process.env.NODE_ENV === 'production') {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { brand, model, gauge, type, baseLifeHours, descriptionDe, benefits } = body;
+    const { brand, model, gauge, type, baseLifeHours, descriptionDe, benefits, imageUrl } = body;
 
     const newString = await prisma.tennisString.create({
       data: {
@@ -26,7 +26,8 @@ export async function POST(req: Request) {
         type,
         baseLifeHours: parseFloat(baseLifeHours || "0"),
         descriptionDe,
-        benefits: JSON.stringify(benefits || [])
+        benefits: JSON.stringify(benefits || []),
+        imageUrl: imageUrl || null
       }
     });
 

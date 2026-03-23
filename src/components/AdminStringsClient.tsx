@@ -67,10 +67,15 @@ export function AdminStringsClient({ initialStrings }: { initialStrings: TennisS
     setGauge(parseFloat(s.gauge.replace('mm', '')) || 1.25);
     setType(s.type);
     
-    // Reverse engineer physics for edit view
-    // Default to Poly and simple inference
-    setMaterialBase(s.baseLifeHours > 16 ? 20 : 12);
-    setIsProfiled(false);
+    // Reverse engineer physics for edit view based on explicit type name
+    if (s.type === "Co-Poly Premium") setMaterialBase(15);
+    else if (s.type === "Multifilament") setMaterialBase(20);
+    else if (s.type === "Naturdarm") setMaterialBase(25);
+    else setMaterialBase(12); // Default Polyester
+    
+    // Imperfect surface reverse-engineering: If the hours are suspiciously low for the material + gauge
+    const expectedNormal = (s.type === "Co-Poly Premium" ? 15 : (s.type === "Multifilament" ? 20 : (s.type === "Naturdarm" ? 25 : 12))) * (parseFloat(s.gauge.replace('mm', '')) / 1.25);
+    setIsProfiled(s.baseLifeHours < expectedNormal * 0.9);
     
     setDescriptionDe(s.descriptionDe);
     let ben = [];
@@ -283,14 +288,14 @@ export function AdminStringsClient({ initialStrings }: { initialStrings: TennisS
                 <h3 className="text-[11px] font-black tracking-widest text-[#10b981] uppercase">2. Oberflächen-Check</h3>
                 <HelpCircle className="w-3 h-3 text-gray-500" />
               </div>
-              <div className="flex bg-[#161616] p-1 rounded-2xl border border-white/5 relative">
-                <button onClick={() => setIsProfiled(false)} className={`flex-1 flex flex-col items-center justify-center p-4 rounded-xl font-bold text-sm transition-all z-10 ${!isProfiled ? 'bg-[#202020] text-white shadow-md' : 'text-gray-500'}`}>
-                  <span>Glatt / Beschichtet</span>
-                  <span className="text-[10px] text-gray-500 mt-1">Faktor 1.0</span>
+              <div className="grid grid-cols-2 gap-3">
+                <button onClick={() => setIsProfiled(false)} className={`p-4 rounded-xl flex flex-col items-center justify-center transition-all border ${!isProfiled ? 'bg-[#10b981]/20 border-[#10b981] text-[#10b981]' : 'bg-[#161616] border-white/5 text-gray-400 hover:bg-[#202020]'}`}>
+                  <span className="font-bold text-sm">Glatt / Beschichtet</span>
+                  <span className="text-[10px] opacity-70 mt-1 font-medium tracking-widest uppercase">Faktor 1.0</span>
                 </button>
-                <button onClick={() => setIsProfiled(true)} className={`flex-1 flex flex-col items-center justify-center p-4 rounded-xl font-bold text-sm transition-all z-10 ${isProfiled ? 'bg-[#202020] text-white shadow-md' : 'text-gray-500'}`}>
-                  <span>Profiliert / Eckig</span>
-                  <span className="text-[10px] text-gray-500 mt-1">Faktor 0.85</span>
+                <button onClick={() => setIsProfiled(true)} className={`p-4 rounded-xl flex flex-col items-center justify-center transition-all border ${isProfiled ? 'bg-[#10b981]/20 border-[#10b981] text-[#10b981]' : 'bg-[#161616] border-white/5 text-gray-400 hover:bg-[#202020]'}`}>
+                  <span className="font-bold text-sm">Profiliert / Eckig</span>
+                  <span className="text-[10px] opacity-70 mt-1 font-medium tracking-widest uppercase">Faktor 0.85</span>
                 </button>
               </div>
             </div>

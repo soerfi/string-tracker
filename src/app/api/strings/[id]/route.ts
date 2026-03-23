@@ -26,6 +26,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     if (body.baseLifeHours !== undefined) updateData.baseLifeHours = parseFloat(body.baseLifeHours);
     if (body.descriptionDe !== undefined) updateData.descriptionDe = body.descriptionDe;
     if (body.benefits !== undefined) updateData.benefits = JSON.stringify(body.benefits);
+    if (body.imageUrl !== undefined) updateData.imageUrl = body.imageUrl;
 
     const updated = await prisma.tennisString.update({
       where: { id },
