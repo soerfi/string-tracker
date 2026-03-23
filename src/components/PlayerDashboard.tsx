@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { calculateDeadDate, calculateHealthPercentage } from '@/lib/decay';
 import { Droplet, Calendar, CheckCircle2, Activity } from 'lucide-react';
+import { useInView, animate } from 'framer-motion';
 
 export function PlayerDashboard({
   stringDate,
@@ -63,31 +64,29 @@ export function PlayerDashboard({
 
   const [displayHealth, setDisplayHealth] = useState(0);
   const [displayDays, setDisplayDays] = useState(0);
+  
+  const statsRef = useRef(null);
+  const isInView = useInView(statsRef, { once: true, margin: "-50px" });
 
   useEffect(() => {
-    let startTime: number;
-    const duration = 1500; // 1.5s animation
+    if (isInView) {
+      const controls1 = animate(0, health, {
+        duration: 2,
+        ease: "easeOut",
+        onUpdate: (v) => setDisplayHealth(v)
+      });
+      const controls2 = animate(0, Math.max(0, daysLeft), {
+        duration: 2,
+        ease: "easeOut",
+        onUpdate: (v) => setDisplayDays(v)
+      });
 
-    const animate = (timestamp: number) => {
-      if (!startTime) startTime = timestamp;
-      const progress = Math.min((timestamp - startTime) / duration, 1);
-      
-      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-
-      setDisplayHealth(health * easeOutQuart);
-      setDisplayDays(Math.max(0, daysLeft) * easeOutQuart);
-
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      }
-    };
-    
-    // Slight delay before starting
-    const timeout = setTimeout(() => {
-      requestAnimationFrame(animate);
-    }, 100);
-    return () => clearTimeout(timeout);
-  }, [health, daysLeft]);
+      return () => {
+        controls1.stop();
+        controls2.stop();
+      };
+    }
+  }, [isInView, health, daysLeft]);
 
   const getHealthColor = (h: number) => {
     if (h > 60) return '#10b981'; // Green
@@ -116,8 +115,8 @@ export function PlayerDashboard({
       </header>
 
       {/* HUGE String & Tension Display */}
-      <div className="bg-[#161616] text-white rounded-3xl p-6 text-center shadow-lg mx-2 mt-2 border border-white/5 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-[#10b981]/5 blur-[80px] rounded-full -mr-20 -mt-20 pointer-events-none"></div>
+      <div className="bg-gradient-to-br from-[#0c2a1e] to-[#161616] text-white rounded-3xl p-6 text-center shadow-[0_0_30px_rgba(16,185,129,0.1)] mx-2 mt-2 border border-[#10b981]/20 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-[#10b981]/10 blur-[80px] rounded-full -mr-20 -mt-20 pointer-events-none"></div>
         <div className="text-[10px] font-black tracking-widest uppercase text-[#10b981] mb-1 relative z-10">Montierte Saite</div>
         <div className="text-3xl font-black leading-tight tracking-tight mb-4 relative z-10">{stringBrand} <br/> {stringModel}</div>
         
@@ -139,40 +138,42 @@ export function PlayerDashboard({
         )}
       </div>
 
-      {/* Big Gauge */}
-      <div className="flex justify-center mt-4">
-        <div className="relative w-48 h-48">
-          <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="45" fill="none" stroke="#161616" strokeWidth="10" />
-            <circle 
-              cx="50" cy="50" r="45" fill="none" 
-              stroke={currentColor} 
-              strokeWidth="10" 
-              strokeDasharray="283" 
-              strokeDashoffset={283 - (283 * displayHealth) / 100}
-              strokeLinecap="round"
-              className="transition-colors duration-200"
-            />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-4xl font-black text-white">{Math.round(displayHealth)}%</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Dates row */}
-      <div className="grid grid-cols-2 gap-4 mt-2">
-        <div className="bg-[#161616] rounded-2xl p-5 border border-white/5 shadow-lg">
-            <div className="text-[11px] text-gray-400 font-bold uppercase tracking-widest mb-1">Besaiten in</div>
-            <div className="text-3xl font-black" style={{ color: currentColor }}>
-              {Math.round(displayDays)} <span className="text-xl text-gray-500">Tage</span>
+      {/* Big Gauge & Dates Container with Observer */}
+      <div ref={statsRef}>
+        <div className="flex justify-center mt-4">
+          <div className="relative w-48 h-48">
+            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="45" fill="none" stroke="#161616" strokeWidth="10" />
+              <circle 
+                cx="50" cy="50" r="45" fill="none" 
+                stroke={currentColor} 
+                strokeWidth="10" 
+                strokeDasharray="283" 
+                strokeDashoffset={283 - (283 * displayHealth) / 100}
+                strokeLinecap="round"
+                className="transition-colors duration-200"
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-4xl font-black text-white">{Math.round(displayHealth)}%</span>
             </div>
-        </div>
-        <div className="bg-[#161616] rounded-2xl p-5 border border-white/5 shadow-lg flex flex-col justify-center">
-          <div className="text-[#10b981] font-bold text-sm tracking-tight leading-snug mb-2">
-            Dein optimales Spielfenster endet am:
           </div>
-          <div className="text-xl font-black text-white">{deadDate.toLocaleDateString('de-CH', { day: '2-digit', month: 'long', year: 'numeric'})}</div>
+        </div>
+  
+        {/* Dates row */}
+        <div className="grid grid-cols-2 gap-4 mt-2">
+          <div className="bg-[#161616] rounded-2xl p-5 border border-white/5 shadow-lg">
+              <div className="text-[11px] text-gray-400 font-bold uppercase tracking-widest mb-1">Besaiten in</div>
+              <div className="text-3xl font-black" style={{ color: currentColor }}>
+                {Math.round(displayDays)} <span className="text-xl text-gray-500">Tage</span>
+              </div>
+          </div>
+          <div className="bg-[#161616] rounded-2xl p-5 border border-white/5 shadow-lg flex flex-col justify-center">
+            <div className="text-[#10b981] font-bold text-sm tracking-tight leading-snug mb-2">
+              Dein optimales Spielfenster endet am:
+            </div>
+            <div className="text-xl font-black text-white">{deadDate.toLocaleDateString('de-CH', { day: '2-digit', month: 'long', year: 'numeric'})}</div>
+          </div>
         </div>
       </div>
 
