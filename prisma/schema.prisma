@@ -45,6 +45,7 @@ model TennisString {
   baseLifeHours   Float
   descriptionDe   String
   benefits        String      // JSON stringified array since SQLite lacks String[]
+  imageUrl        String?     // External URL or internal file path to the uploaded WebP square thumbnail
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   jobs            StringJob[]

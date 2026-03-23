@@ -65,6 +65,7 @@ export default async function PlayerPage({ params }: { params: Promise<{ id: str
           playerName={racket.player.name}
           racketBrand={racket.brand}
           racketModel={racket.model}
+          stringImageUrl={job.string.imageUrl}
         />
       </main>
     );
@@ -103,6 +104,7 @@ export default async function PlayerPage({ params }: { params: Promise<{ id: str
         playerName={job.player.name}
         racketBrand={job.racketBrand || job.player.racketBrand}
         racketModel={job.racketModel || job.player.racketModel}
+        stringImageUrl={job.string.imageUrl}
       />
     </main>
   );

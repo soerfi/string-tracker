@@ -13,6 +13,7 @@ interface TennisString {
   baseLifeHours: number;
   descriptionDe: string;
   benefits: string; // JSON
+  imageUrl: string | null;
 }
 
 export function AdminStringsClient({ initialStrings }: { initialStrings: TennisString[] }) {
@@ -28,6 +29,8 @@ export function AdminStringsClient({ initialStrings }: { initialStrings: TennisS
   const [gauge, setGauge] = useState(1.25);
   const [descriptionDe, setDescriptionDe] = useState("");
   const [benefitsStr, setBenefitsStr] = useState(""); 
+  const [imageUrl, setImageUrl] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
   
   // Physics Calculator State
   const [materialBase, setMaterialBase] = useState(12);
@@ -54,6 +57,7 @@ export function AdminStringsClient({ initialStrings }: { initialStrings: TennisS
     setIsProfiled(false);
     setIsAdding(false);
     setEditingId(null);
+    setImageUrl("");
   };
 
   const startEdit = (s: TennisString) => {
@@ -72,6 +76,7 @@ export function AdminStringsClient({ initialStrings }: { initialStrings: TennisS
     let ben = [];
     try { ben = JSON.parse(s.benefits); } catch(e) { /* ignore */ }
     setBenefitsStr(ben.join(", "));
+    setImageUrl(s.imageUrl || "");
     setIsAdding(false);
   };
 
@@ -91,6 +96,7 @@ export function AdminStringsClient({ initialStrings }: { initialStrings: TennisS
       type: type || "Standard Saite",
       baseLifeHours: calculatedHours,
       descriptionDe,
+      imageUrl,
       benefits: benefitsStr.split(',').map(s => s.trim()).filter(Boolean)
     };
 
@@ -137,6 +143,32 @@ export function AdminStringsClient({ initialStrings }: { initialStrings: TennisS
     }
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setImageUrl(data.url);
+      } else {
+        alert("Upload fehlgeschlagen");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Netzwerkfehler beim Upload");
+    }
+    setIsUploading(false);
+  };
+
   return (
     <div className="max-w-xl mx-auto space-y-6 pb-32">
       <header className="flex items-center gap-4 mt-6 px-2">
@@ -164,11 +196,20 @@ export function AdminStringsClient({ initialStrings }: { initialStrings: TennisS
             {strings.map((s) => (
               <div key={s.id} className="bg-[#161616] border border-white/5 rounded-2xl p-4 flex flex-col gap-3 relative group hover:border-[#10b981]/30 transition-colors">
                 <div className="flex items-start justify-between">
-                  <div>
-                    <div className="font-bold text-lg text-white leading-tight">{s.brand} {s.model}</div>
-                    <div className="text-sm font-bold text-[#10b981] mt-0.5">{s.gauge} • {s.type}</div>
+                  <div className="flex items-center gap-4">
+                    {s.imageUrl ? (
+                      <img src={s.imageUrl} alt={`${s.brand} ${s.model}`} className="w-16 h-16 rounded-xl object-cover bg-white/5 shrink-0 border border-white/10" />
+                    ) : (
+                      <div className="w-16 h-16 rounded-xl bg-[#202020] border border-white/5 shrink-0 flex items-center justify-center">
+                        <Droplet className="w-6 h-6 text-gray-600" />
+                      </div>
+                    )}
+                    <div>
+                      <div className="font-bold text-lg text-white leading-tight">{s.brand} {s.model}</div>
+                      <div className="text-sm font-bold text-[#10b981] mt-0.5">{s.gauge} • {s.type}</div>
+                    </div>
                   </div>
-                  <div className="flex gap-1 bg-black/50 p-1 rounded-xl">
+                  <div className="flex gap-1 bg-black/50 p-1 rounded-xl shrink-0">
                     <button onClick={() => startEdit(s)} className="p-2 text-gray-400 hover:text-white rounded-lg transition">
                       <Edit2 className="w-4 h-4" />
                     </button>
@@ -283,6 +324,27 @@ export function AdminStringsClient({ initialStrings }: { initialStrings: TennisS
             <div className="pt-2 border-t border-white/5 space-y-4">
               <input type="text" value={benefitsStr} onChange={e => setBenefitsStr(e.target.value)} className="w-full bg-[#161616] border border-white/5 rounded-xl px-5 py-4 text-sm font-medium focus:border-[#10b981] outline-none" placeholder="Vorteile (Kommaintervall: Spin, Kontrolle)" />
               <textarea value={descriptionDe} onChange={e => setDescriptionDe(e.target.value)} className="w-full h-24 bg-[#161616] border border-white/5 rounded-xl px-5 py-4 text-sm resize-none focus:border-[#10b981] outline-none font-medium" placeholder="Eigene Beschreibung... (Angezeigt für den Spieler)" />
+            </div>
+
+            {/* Step 5: Thumbnail Upload */}
+            <div className="pt-2 border-t border-white/5">
+              <div className="flex items-center gap-2 mb-3">
+                 <h3 className="text-[11px] font-black tracking-widest text-[#10b981] uppercase">5. Produktbild (WebP)</h3>
+              </div>
+              <div className="flex items-center gap-4 bg-[#161616] p-4 rounded-xl border border-white/5">
+                 {imageUrl ? (
+                   <div className="relative group shrink-0 w-20 h-20 rounded-xl overflow-hidden border border-[#10b981]/50 bg-black/50">
+                     <img src={imageUrl} alt="Uploaded Thread" className="w-full h-full object-cover" />
+                     <button onClick={() => setImageUrl("")} className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white"><X className="w-6 h-6" /></button>
+                   </div>
+                 ) : (
+                   <label className="w-20 h-20 rounded-xl border-2 border-dashed border-gray-600 bg-[#202020] flex items-center justify-center cursor-pointer hover:border-[#10b981] hover:text-[#10b981] text-gray-500 transition shrink-0">
+                     {isUploading ? <span className="text-xs font-bold">Laden...</span> : <Plus className="w-8 h-8" />}
+                     <input type="file" accept="image/webp" className="hidden" onChange={handleImageUpload} disabled={isUploading} />
+                   </label>
+                 )}
+                 <div className="text-xs text-gray-500 font-medium">Lade hier das hochauflösende WebP-Bild (Square) der Saite hoch. Es wird komprimiert und im Profil des Spielers transparent dargestellt.</div>
+              </div>
             </div>
 
           </div>

@@ -22,7 +22,8 @@ export function PlayerDashboard({
   racketBrand,
   racketModel,
   playerRacketBrand,
-  playerRacketModel
+  playerRacketModel,
+  stringImageUrl
 }: {
   stringDate: string;
   baseLifeHours: number;
@@ -43,8 +44,10 @@ export function PlayerDashboard({
   racketModel?: string | null;
   playerRacketBrand?: string | null;
   playerRacketModel?: string | null;
+  stringImageUrl?: string | null;
 }) {
   const [freq, setFreq] = useState(initialWeeklyFrequency);
+  const [isZoomed, setIsZoomed] = useState(false);
   
   const sDate = new Date(stringDate);
   const deadDate = calculateDeadDate(sDate, baseLifeHours, skillMultiplier, freq);
@@ -59,7 +62,7 @@ export function PlayerDashboard({
   const daysLeft = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
   return (
-    <div className="max-w-md mx-auto flex flex-col gap-6 pb-24 font-sans px-2">
+    <div className="max-w-md mx-auto flex flex-col gap-6 pb-24 font-sans px-2 relative">
       <header className="mt-8 text-center relative">
         <div className="flex justify-center mb-6">
           <div className="p-3 bg-white rounded-3xl shadow-[0_0_30px_rgba(255,255,255,0.1)] inline-block">
@@ -159,10 +162,19 @@ export function PlayerDashboard({
         <h2 className="text-[11px] font-bold tracking-widest text-gray-400 uppercase mb-4 px-1">String Specs</h2>
         <div className="bg-[#161616] border border-white/5 rounded-3xl p-6 shadow-lg">
           <div className="flex gap-4 mb-6">
-            <div className="w-12 h-12 bg-[#0c2a1e] rounded-xl flex items-center justify-center shrink-0">
-              <Droplet className="w-5 h-5 text-[#10b981]" />
-            </div>
-            <div>
+            {stringImageUrl ? (
+              <img 
+                src={stringImageUrl} 
+                alt={stringModel}
+                onClick={() => setIsZoomed(true)}
+                className="w-16 h-16 rounded-xl object-cover border border-[#10b981]/50 bg-white/5 cursor-zoom-in shrink-0 shadow-lg shadow-[#10b981]/10"
+              />
+            ) : (
+              <div className="w-16 h-16 bg-[#0c2a1e] rounded-xl flex items-center justify-center shrink-0 border border-[#10b981]/20">
+                <Droplet className="w-6 h-6 text-[#10b981]" />
+              </div>
+            )}
+            <div className="flex flex-col justify-center">
               <div className="font-bold text-[16px]">{stringBrand} {stringModel}</div>
               <div className="text-[12px] text-gray-400 mt-1">{stringType} • {stringGauge}</div>
             </div>
@@ -196,6 +208,20 @@ export function PlayerDashboard({
           <CheckCircle2 className="w-5 h-5 text-[#10b981]" />
         </div>
       </section>
+
+      {/* Fullscreen Lightbox Overlay */}
+      {isZoomed && stringImageUrl && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 cursor-zoom-out animate-in fade-in duration-200"
+          onClick={() => setIsZoomed(false)}
+        >
+           <img 
+             src={stringImageUrl} 
+             alt={stringModel}
+             className="w-full max-w-[1080px] max-h-[1080px] object-contain drop-shadow-[0_0_50px_rgba(16,185,129,0.3)] animate-in zoom-in-95 duration-300"
+           />
+        </div>
+      )}
     </div>
   );
 }
