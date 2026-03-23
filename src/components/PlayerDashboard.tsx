@@ -225,7 +225,7 @@ export function PlayerDashboard({
             ))}
           </div>
 
-          <p className="text-sm text-gray-300 italic leading-relaxed">
+          <p className="text-sm text-gray-300 italic leading-relaxed whitespace-pre-line">
             {descriptionDe || `Diese Saite bietet eine hervorragende Balance aus Power und Kontrolle. Konzipiert für Spieler mit hohem Spin-Bedarf.`}
           </p>
         </div>
