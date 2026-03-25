@@ -17,7 +17,7 @@ export default async function CustomersPage() {
   });
 
   return (
-    <main className="min-h-screen bg-[#0a0a0a] text-white p-6 pb-32 font-sans">
+    <main className="min-h-[100dvh] bg-[#0a0a0a] text-white p-6 pb-32 font-sans md:ml-[280px]">
       <TopBar />
       
       <header className="flex items-center justify-between mb-8">

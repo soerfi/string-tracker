@@ -110,13 +110,9 @@ export function PlayerDashboard({
   return (
     <div className="max-w-md mx-auto flex flex-col gap-6 pb-24 font-sans px-2 relative">
       <header className="mt-8 text-center relative">
-        <div className="flex justify-center mb-6">
-          <div className="p-3 bg-white rounded-3xl shadow-[0_0_30px_rgba(255,255,255,0.1)] inline-block">
-            <img 
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(`https://tennis.soerfi.com/player/${qrCodeToken}`)}`} 
-              alt="Profil QR Code" 
-              className="w-24 h-24"
-            />
+        <div className="flex justify-center mb-4">
+          <div className="px-3 py-1 bg-[#161616] border border-[#10b981]/20 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.1)] inline-block">
+            <span className="text-[10px] font-black tracking-widest text-[#10b981] uppercase">ID: {qrCodeToken}</span>
           </div>
         </div>
         <h1 className="text-2xl font-black tracking-tight relative z-10 text-[#10b981]">

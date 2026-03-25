@@ -43,3 +43,11 @@ Welcome, future AI! You are working on "String Tracker", a modern Next.js CRM de
 - Run Dev: `npm run dev`
 - Build Verification: `npm run build && npm run lint`
 - Clean DB Wipe: Delete `prisma/dev.db` and push.
+
+## 🌐 2026-03-23: Global Proxy Architecture Migration
+- The server (72.62.43.134) now uses a completely decoupled **Caddy Reverse Proxy** (`global-caddy-proxy`) to natively handle all incoming traffic on ports 80 and 443.
+- Caddy automatically provisions and renews Let's Encrypt SSL certificates for all integrated domains (e.g., `dist.ch`, `win.skate.ch`) effortlessly.
+- Individual Docker Compose applications (like this one) **MUST NO LONGER** map to ports 80 or 443 directly, or they will cause a bind conflict.
+- Instead, apps maintain a distinct internal host port (e.g., `8000:80` for App Suite, `3005:3000` for Wheel of Fortune). 
+- To add a new domain, simply append the routing rule to the central `/Users/soerfi/illUMATE Dropbox/Markus Schweingruber/Antigravity Projects/global-proxy/Caddyfile`.
+- Execute `./deploy-proxy.sh` inside the `global-proxy` directory to instantly apply domain changes to the server without downtime.

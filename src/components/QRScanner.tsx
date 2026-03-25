@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Camera, RefreshCw } from 'lucide-react';
+// @ts-ignore: Library internal paths are not resolving in TypeScript strict mode
 import { Scanner, IDetectedBarcode } from '@yudiel/react-qr-scanner';
 
 interface QRScannerProps {

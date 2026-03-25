@@ -22,7 +22,7 @@ export default async function AdminJobDetailPage({ params }: { params: Promise<{
   }
 
   return (
-    <main className="min-h-screen bg-[#0a0a0a] text-white">
+    <main className="min-h-[100dvh] bg-[#0a0a0a] text-white md:ml-[280px]">
       <JobEditClient job={job} />
     </main>
   );

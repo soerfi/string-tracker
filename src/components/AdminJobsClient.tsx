@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Trash2, CheckCircle } from 'lucide-react';
+import { Trash2, CheckCircle, Wallet } from 'lucide-react';
 
 interface JobType {
   id: string;
@@ -16,9 +16,10 @@ interface JobType {
   isPaid: boolean;
   player: { name: string; racketBrand: string | null; racketModel: string | null; };
   string: { brand: string; model: string };
+  createdAt: string | Date;
 }
 
-export function AdminJobsClient({ initialJobs, hideActions = false }: { initialJobs: JobType[], hideActions?: boolean }) {
+export function AdminJobsClient({ initialJobs, hideActions = false, statusType = "ALL" }: { initialJobs: JobType[], hideActions?: boolean, statusType?: "PENDING" | "UNPAID" | "ALL" }) {
   const [jobs, setJobs] = useState(initialJobs);
 
   const deleteJob = async (id: string, e: React.MouseEvent) => {
@@ -27,9 +28,7 @@ export function AdminJobsClient({ initialJobs, hideActions = false }: { initialJ
     try {
       const res = await fetch(`/api/jobs/${id}`, { method: 'DELETE' });
       if (res.ok) setJobs(jobs.filter(j => j.id !== id));
-    } catch(err) {
-      console.error(err);
-    }
+    } catch(err) { console.error(err); }
   };
 
   const markDone = async (id: string, e: React.MouseEvent) => {
@@ -41,58 +40,69 @@ export function AdminJobsClient({ initialJobs, hideActions = false }: { initialJ
         body: JSON.stringify({ status: 'DONE' })
       });
       if (res.ok) setJobs(jobs.filter(j => j.id !== id));
-    } catch(err) {
-       console.error(err);
-    }
+    } catch(err) { console.error(err); }
   };
 
-  if (jobs.length === 0) {
-    return (
-      <div className="bg-[#161616] p-6 rounded-3xl border border-white/5 text-center text-gray-500 font-medium tracking-wide">
-        Keine anstehenden Aufträge.
-      </div>
-    );
-  }
+  const markPaid = async (id: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`/api/jobs/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isPaid: true })
+      });
+      if (res.ok) setJobs(jobs.filter(j => j.id !== id));
+    } catch(err) { console.error(err); }
+  };
+
+  if (jobs.length === 0) return null;
 
   return (
     <>
       {jobs.map(job => (
-        <Link href={`/admin/jobs/${job.id}`} key={job.id} className="bg-[#161616] p-5 rounded-3xl border border-white/5 flex items-center justify-between hover:border-white/10 transition-colors active:scale-[0.98] group relative overflow-hidden">
-          <div className="flex items-center gap-4 relative z-10 w-full pr-8">
-            <div className="w-12 h-12 rounded-2xl bg-[#0a0a0a] border border-white/5 flex shrink-0 items-center justify-center text-[#10b981] font-bold text-lg">
-              {job.player.name.charAt(0)}
+        <Link href={`/admin/jobs/${job.id}`} key={job.id} className="bg-[#161616] p-4 rounded-[24px] border border-white/5 flex flex-col gap-3 hover:border-white/10 transition-colors active:scale-[0.98] group relative overflow-hidden shadow-lg">
+          <div className="flex items-center justify-between relative z-10 w-full">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-[14px] bg-[#0a0a0a] border border-white/5 flex shrink-0 items-center justify-center text-[#10b981] font-black text-lg">
+                {job.player.name.charAt(0)}
+              </div>
+              <div>
+                <div className="font-bold text-base leading-tight text-white truncate max-w-[120px] xs:max-w-[180px] sm:max-w-xs">{job.player.name}</div>
+                <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-0.5 truncate max-w-[120px] xs:max-w-[180px] sm:max-w-xs">
+                  {job.racketBrand || job.player.racketBrand} {job.racketModel || job.player.racketModel}
+                </div>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-bold text-lg leading-tight mb-0.5 truncate">{job.player.name}</div>
-              {(job.racketBrand || job.player.racketBrand) && (
-                <div className="text-[11px] font-medium text-gray-400 truncate mb-0.5">
-                  Schläger: {job.racketBrand || job.player.racketBrand} {job.racketModel || job.player.racketModel}
+            <div className="text-right flex flex-col items-end shrink-0">
+              {job.deadline && statusType === 'PENDING' && (
+                <div className="font-black text-[#10b981] bg-[#10b981]/10 border border-[#10b981]/20 px-2 py-1 rounded text-[10px] uppercase tracking-wider mb-1">
+                  Bis {new Date(job.deadline).toLocaleDateString('de-CH').slice(0, 5)}
                 </div>
               )}
-              <div className="text-xs font-medium text-[#10b981] truncate">Saite: {job.string.brand} {job.string.model}</div>
+              <div className="text-xs font-bold text-white tracking-widest bg-white/5 px-2 py-1 rounded flex gap-1">
+                 <span className="text-gray-500">#</span> {job.tensionMain}/{job.tensionCross} <span className="text-gray-500">kg</span>
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-3 relative z-10 shrink-0">
-            <div className="text-right flex flex-col items-end gap-1">
-              <div className="font-black text-[#10b981] bg-[#10b981]/10 px-2 py-0.5 rounded-lg text-sm">
-                {job.deadline ? new Date(job.deadline).toLocaleDateString('de-CH') : 'Keine Frist'}
-              </div>
-              <div className="text-xs font-bold text-gray-500 tracking-wider hidden sm:block">
-                {job.tensionMain}/{job.tensionCross} kg
-              </div>
-              {job.status === 'DONE' && (
-                <div className={`text-[10px] font-black uppercase px-2 py-0.5 rounded border mt-1 shadow-sm ${job.isPaid ? 'bg-[#10b981]/10 text-[#10b981] border-[#10b981]/30' : 'bg-red-500/10 text-red-500 border-red-500/30'}`}>
-                  {job.isPaid ? "Bezahlt" : "Offen"}
-                </div>
-              )}
+
+          <div className="flex items-center justify-between border-t border-white/5 pt-3 mt-1">
+            <div className="text-xs font-bold text-[#10b981] truncate pl-1 pr-2">
+               {job.string.brand} {job.string.model}
             </div>
-            {/* Actions */}
+            
             {!hideActions && (
-              <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-1">
-                <button title="Erledigt" onClick={(e) => markDone(job.id, e)} className="p-1.5 bg-[#10b981]/10 text-[#10b981] rounded-lg hover:bg-[#10b981]/20">
-                  <CheckCircle className="w-4 h-4" />
-                </button>
-                <button title="Löschen" onClick={(e) => deleteJob(job.id, e)} className="p-1.5 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500/20">
+              <div className="flex gap-2 relative z-20 shrink-0 border-l border-white/5 pl-3">
+                {statusType === 'PENDING' && (
+                  <button onClick={(e) => markDone(job.id, e)} className="px-4 py-2 bg-[#10b981] text-gray-950 font-black text-[10px] sm:text-[11px] uppercase tracking-widest rounded-xl hover:bg-[#059669] transition shadow-[0_0_15px_rgba(16,185,129,0.3)] flex items-center gap-1.5">
+                    <CheckCircle className="w-3.5 h-3.5" /> Erledigt
+                  </button>
+                )}
+                {statusType === 'UNPAID' && (
+                  <button onClick={(e) => markPaid(job.id, e)} className="px-4 py-2 bg-red-500 text-white font-black text-[10px] sm:text-[11px] uppercase tracking-widest rounded-xl hover:bg-red-600 transition shadow-[0_0_15px_rgba(239,68,68,0.3)] flex items-center gap-1.5">
+                    <Wallet className="w-3.5 h-3.5" /> Bezahlt
+                  </button>
+                )}
+                <button title="Löschen" onClick={(e) => deleteJob(job.id, e)} className="p-2 bg-white/5 text-gray-400 rounded-xl hover:bg-red-500/20 hover:text-red-500 transition border border-transparent hover:border-red-500/20">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>

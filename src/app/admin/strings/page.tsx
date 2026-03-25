@@ -11,7 +11,7 @@ export default async function StringsPage() {
   })
   
   return (
-    <main className="min-h-screen bg-[#0a0a0a] text-white p-4 font-sans">
+    <main className="min-h-[100dvh] bg-[#0a0a0a] text-white p-6 pb-32 font-sans md:ml-[280px]">
       <AdminStringsClient initialStrings={strings} />
     </main>
   )

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, CheckCircle2, QrCode, Save, Clock, CircleDollarSign } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 export function JobEditClient({ job }: { job: {
   id: string;
@@ -53,12 +54,13 @@ export function JobEditClient({ job }: { job: {
       });
       if (res.ok) {
         setStatus(updatedStatus);
+        toast.success("Gespeichert");
       } else {
-        alert("Fehler beim Speichern");
+        toast.error("Fehler beim Speichern");
       }
     } catch(err) {
       console.error(err);
-      alert("Fehler beim Speichern");
+      toast.error("Fehler beim Speichern");
     }
     setIsSaving(false);
   };
@@ -89,7 +91,7 @@ export function JobEditClient({ job }: { job: {
               <div className="text-[11px] font-bold tracking-widest text-[#10b981] uppercase mb-1">Kunde</div>
               <div className="font-black text-xl">{job.player.name}</div>
             </div>
-            <a href={`/player/${job.qrCodeToken}`} target="_blank" className="flex items-center gap-1.5 bg-[#10b981]/10 text-[#10b981] px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-[#10b981]/20 transition-colors">
+            <a href={`/p/${job.qrCodeToken}`} target="_blank" className="flex items-center gap-1.5 bg-[#10b981]/10 text-[#10b981] px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-[#10b981]/20 transition-colors">
               <QrCode className="w-3.5 h-3.5" /> Dashboard
             </a>
           </div>
