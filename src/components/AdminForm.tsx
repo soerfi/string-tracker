@@ -130,6 +130,7 @@ export function AdminForm({
         setRacketModel(matchedRacket.model);
         
         found = true;
+        toast.success(`Racket gefunden: ${matchedRacket.brand} ${matchedRacket.model}`);
         setStep(3); // Jump straight to stringing!
         break;
       }
@@ -160,6 +161,7 @@ export function AdminForm({
             setRacketId(racket.id);
             setRacketBrand(racket.brand);
             setRacketModel(racket.model);
+            toast.success(`Racket gefunden: ${racket.brand} ${racket.model}`);
             setStep(3); // Jump straight to stringing!
             return;
           }

@@ -64,10 +64,22 @@ export function CustomerDetailClient({ initialCustomer, initialPresets }: { init
     ), { duration: Infinity });
   };
 
-  const handleScan = (decodedText: string) => {
+  const handleScan = async (decodedText: string) => {
     const token = decodedText.split('/').pop() || decodedText;
-    setScannedToken(token);
     setIsScanning(false);
+
+    try {
+      const res = await fetch(`/api/rackets/by-token?token=${token}`);
+      if (res.ok) {
+        toast.error("Dieser QR-Code wird bereits von einem anderen Racket verwendet!");
+        setScannedToken("");
+      } else {
+        setScannedToken(token);
+        toast.success("Code erkannt und bereit zur Zuweisung!");
+      }
+    } catch (e) {
+      toast.error("Fehler bei der Code-Prüfung");
+    }
   };
 
   const handleAddRacket = async () => {

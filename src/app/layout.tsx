@@ -10,8 +10,14 @@ export const metadata: Metadata = {
   description: 'Smart String Inventory',
 };
 
-export const viewport = {
+import type { Viewport } from 'next';
+
+export const viewport: Viewport = {
   themeColor: '#0a0a0a',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 import { Toaster } from 'react-hot-toast';
