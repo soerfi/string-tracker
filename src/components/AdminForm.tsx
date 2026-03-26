@@ -306,11 +306,18 @@ export function AdminForm({
                       className="w-full bg-[#0a0a0a] border border-white/5 rounded-xl px-4 py-4 text-white font-medium focus:outline-none focus:border-[#10b981] transition"
                       placeholder="Vorname & Nachname" autoFocus
                     />
-                    <input 
-                      type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
-                      className="w-full bg-[#0a0a0a] border border-white/5 rounded-xl px-4 py-4 text-white font-medium focus:outline-none focus:border-[#10b981] transition" 
-                      placeholder="Handynummer (optional)"
-                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <input 
+                        type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                        className="w-full bg-[#0a0a0a] border border-white/5 rounded-xl px-4 py-4 text-white font-medium focus:outline-none focus:border-[#10b981] transition" 
+                        placeholder="E-Mail (optional)"
+                      />
+                      <input 
+                        type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
+                        className="w-full bg-[#0a0a0a] border border-white/5 rounded-xl px-4 py-4 text-white font-medium focus:outline-none focus:border-[#10b981] transition" 
+                        placeholder="Telefon (optional)"
+                      />
+                    </div>
                   </div>
                 )}
               </section>
