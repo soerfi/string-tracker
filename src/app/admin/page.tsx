@@ -24,8 +24,8 @@ export default async function AdminDashboard() {
     include: { player: true, string: true }
   });
 
-  const unpaidJobs = await prisma.stringJob.findMany({
-    where: { status: 'DONE', isPaid: false },
+  const readyJobs = await prisma.stringJob.findMany({
+    where: { status: 'READY' },
     orderBy: { updatedAt: 'desc' },
     take: 10,
     include: { player: true, string: true }
@@ -52,20 +52,19 @@ export default async function AdminDashboard() {
           </div>
           <div className="text-4xl font-black text-white relative z-10 mt-3">{pendingJobs.length}</div>
         </div>
-        
         <div className="bg-[#161616] p-5 rounded-[24px] border border-white/5 relative overflow-hidden shadow-xl shadow-black group">
           <div className="absolute top-0 right-0 p-4 opacity-10 bg-red-500 rounded-bl-full w-24 h-24 -mr-8 -mt-8" />
           <div className="flex items-center gap-3 mb-2 relative z-10">
             <div className="p-2.5 bg-red-500 rounded-[14px] shadow-[0_0_15px_rgba(239,68,68,0.3)]"><Wallet className="w-5 h-5 text-white" strokeWidth={2.5} /></div>
             <span className="text-[10px] font-black tracking-widest text-red-500 uppercase">Abholbereit</span>
           </div>
-          <div className="text-4xl font-black text-white relative z-10 mt-3">{unpaidJobs.length}</div>
+          <div className="text-4xl font-black text-white relative z-10 mt-3">{readyJobs.length}</div>
         </div>
       </div>
 
       <section className="mb-10">
         <h2 className="text-[11px] font-black tracking-widest text-gray-500 uppercase mb-4 flex items-center gap-2">
-          <Scissors className="w-4 h-4 text-[#10b981]" /> Warteschlange
+          <Scissors className="w-4 h-4 text-[#10b981]" /> Aufträge
         </h2>
         {pendingJobs.length > 0 ? (
           <div className="flex flex-col gap-3">
@@ -82,13 +81,13 @@ export default async function AdminDashboard() {
         )}
       </section>
 
-      {unpaidJobs.length > 0 && (
+      {readyJobs.length > 0 && (
         <section className="mb-10">
           <h2 className="text-[11px] font-black tracking-widest text-gray-500 uppercase mb-4 flex items-center gap-2">
-            <Wallet className="w-4 h-4 text-red-400" /> Offene Zahlungen ({unpaidJobs.length})
+            <Wallet className="w-4 h-4 text-red-400" /> Abholbereit ({readyJobs.length})
           </h2>
           <div className="flex flex-col gap-3">
-             <AdminJobsClient initialJobs={unpaidJobs} statusType="UNPAID" />
+             <AdminJobsClient initialJobs={readyJobs} statusType="READY" />
           </div>
         </section>
       )}

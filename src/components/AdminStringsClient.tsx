@@ -6,6 +6,7 @@ import { X, Plus, Trash2, Edit2, PackageOpen, ChevronLeft, Droplet, HelpCircle, 
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { ConfirmModal } from './ConfirmModal';
 
 interface TennisString {
   id: string;
@@ -204,16 +205,23 @@ export function AdminStringsClient({ initialStrings }: { initialStrings: TennisS
     setIsSaving(false);
   };
 
-  const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Saite "${name}" wirklich löschen?`)) return;
+  const [stringToDelete, setStringToDelete] = useState<{id: string, name: string} | null>(null);
+
+  const handleDelete = (id: string, name: string) => {
+    setStringToDelete({id, name});
+  };
+
+  const confirmDelete = async () => {
+    if (!stringToDelete) return;
     try {
-      const res = await fetch(`/api/strings/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/strings/${stringToDelete.id}`, { method: 'DELETE' });
       if (res.ok) {
-        setStrings(prev => prev.filter(s => s.id !== id));
+        setStrings(prev => prev.filter(s => s.id !== stringToDelete.id));
       }
     } catch(e) {
       console.error(e);
     }
+    setStringToDelete(null);
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -244,8 +252,15 @@ export function AdminStringsClient({ initialStrings }: { initialStrings: TennisS
 
   return (
     <div className="max-w-xl mx-auto space-y-6 pb-32">
+      <ConfirmModal 
+        isOpen={!!stringToDelete} 
+        title="Saite löschen" 
+        message={`Möchtest du die Saite "${stringToDelete?.name}" wirklich aus dem Inventar löschen?`} 
+        onConfirm={confirmDelete} 
+        onCancel={() => setStringToDelete(null)} 
+      />
       <header className="flex items-center gap-4 mt-6 px-2">
-        <button onClick={() => router.push('/admin')} className="w-10 h-10 bg-[#161616] border border-white/5 rounded-2xl flex items-center justify-center text-gray-400 hover:text-white transition">
+        <button onClick={() => router.back()} className="w-10 h-10 bg-[#161616] border border-white/5 rounded-2xl flex items-center justify-center text-gray-400 hover:text-white transition">
           <ChevronLeft className="w-6 h-6" />
         </button>
         <div>
@@ -298,8 +313,8 @@ export function AdminStringsClient({ initialStrings }: { initialStrings: TennisS
             {/* Meta Data */}
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <input type="text" value={brand} onChange={e => setBrand(e.target.value)} className="w-full bg-[#161616] border border-white/5 rounded-2xl px-5 py-4 text-white font-bold focus:border-[#10b981] outline-none transition" placeholder="Marke (Babolat)" />
-                <input type="text" value={model} onChange={e => setModel(e.target.value)} className="w-full bg-[#161616] border border-white/5 rounded-2xl px-5 py-4 text-white font-bold focus:border-[#10b981] outline-none transition" placeholder="Modell (RPM Blast)" />
+                <input type="text" value={brand} onChange={e => setBrand(e.target.value)} className="w-full bg-[#161616] border border-white/5 rounded-2xl px-5 py-4 text-white font-bold focus:border-[#10b981] outline-none transition select-text" placeholder="Marke (Babolat)" />
+                <input type="text" value={model} onChange={e => setModel(e.target.value)} className="w-full bg-[#161616] border border-white/5 rounded-2xl px-5 py-4 text-white font-bold focus:border-[#10b981] outline-none transition select-text" placeholder="Modell (RPM Blast)" />
               </div>
             </div>
 
@@ -370,8 +385,8 @@ export function AdminStringsClient({ initialStrings }: { initialStrings: TennisS
 
             {/* Step 4: Descriptions */}
             <div className="pt-2 border-t border-white/5 space-y-4">
-              <input type="text" value={benefitsStr} onChange={e => setBenefitsStr(e.target.value)} className="w-full bg-[#161616] border border-white/5 rounded-xl px-5 py-4 text-sm font-medium focus:border-[#10b981] outline-none" placeholder="Vorteile (Kommaintervall: Spin, Kontrolle)" />
-              <textarea value={descriptionDe} onChange={e => setDescriptionDe(e.target.value)} className="w-full h-24 bg-[#161616] border border-white/5 rounded-xl px-5 py-4 text-sm resize-none focus:border-[#10b981] outline-none font-medium" placeholder="Eigene Beschreibung... (Angezeigt für den Spieler)" />
+              <input type="text" value={benefitsStr} onChange={e => setBenefitsStr(e.target.value)} className="w-full bg-[#161616] border border-white/5 rounded-xl px-5 py-4 text-sm font-medium focus:border-[#10b981] outline-none select-text" placeholder="Vorteile (Kommaintervall: Spin, Kontrolle)" />
+              <textarea value={descriptionDe} onChange={e => setDescriptionDe(e.target.value)} className="w-full h-24 bg-[#161616] border border-white/5 rounded-xl px-5 py-4 text-sm resize-none focus:border-[#10b981] outline-none font-medium select-text" placeholder="Eigene Beschreibung... (Angezeigt für den Spieler)" />
             </div>
 
             {/* Step 5: Thumbnail Upload */}

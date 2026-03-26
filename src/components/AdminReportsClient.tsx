@@ -10,6 +10,7 @@ type DateFilterType = 'currentMonth' | 'lastMonth' | 'year' | 'custom';
 export function AdminReportsClient() {
   const router = useRouter();
   const [filterType, setFilterType] = useState<DateFilterType>('currentMonth');
+  const [displayMode, setDisplayMode] = useState<'REVENUE' | 'JOBS'>('REVENUE');
   
   const [startDate, setStartDate] = useState(format(startOfMonth(new Date()), 'yyyy-MM-dd'));
   const [endDate, setEndDate] = useState(format(endOfMonth(new Date()), 'yyyy-MM-dd'));
@@ -54,17 +55,29 @@ export function AdminReportsClient() {
   const totalPaid = jobs.filter(j => j.isPaid).reduce((sum, job) => sum + (job.price || 0), 0);
   const totalUnpaid = totalRevenue - totalPaid;
 
+  const completedJobs = jobs.filter(j => j.status === 'COMPLETED').length;
+  const readyJobs = jobs.filter(j => j.status === 'READY').length;
+  const pendingJobs = jobs.filter(j => j.status === 'PENDING').length;
+
   const handleExportCSV = () => {
-    const headers = ['Datum', 'Spieler', 'Racket', 'Saite', 'Spannung', 'Preis', 'Bezahlt', 'Zahlungsart'];
+    const headers = ['Datum', 'Termin', 'Spieler', 'Racket', 'Griff', 'Gewicht', 'Saite', 'Spannung (L/Q)', 'Preis', 'Bezahlt', 'Zahlungsart', 'Status', 'Ösen OK', 'Griff OK', 'Overgrip', 'Notizen'];
     const rows = jobs.map(job => [
       format(parseISO(job.createdAt), 'dd.MM.yyyy'),
+      job.deadline ? format(parseISO(job.deadline), 'dd.MM.yyyy') : '-',
       job.player?.name || '-',
-      job.racket ? `${job.racket.brand} ${job.racket.model}` : '-',
+      job.racket ? `${job.racket.brand} ${job.racket.model}` : (job.racketBrand ? `${job.racketBrand} ${job.racketModel}` : '-'),
+      job.racket?.gripSize || '-',
+      job.racket?.weight ? `${job.racket.weight}g` : '-',
       job.string ? `${job.string.brand} ${job.string.model}` : '-',
-      `${job.tensionM}kg / ${job.tensionC}kg`,
+      `${job.tensionMain || '-'}kg / ${job.tensionCross || '-'}kg`,
       job.price || 0,
       job.isPaid ? 'Ja' : 'Nein',
-      job.paymentMethod || '-'
+      job.paymentMethod || '-',
+      job.status || '-',
+      job.grommetsOk ? 'Ja' : 'Nein',
+      job.gripOk ? 'Ja' : 'Nein',
+      job.changeOvergrip ? 'Ja' : 'Nein',
+      `"${(job.notes || '').replace(/"/g, '""')}"`
     ]);
 
     const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
@@ -107,38 +120,63 @@ export function AdminReportsClient() {
         )}
       </div>
 
+      <div className="flex bg-[#161616] p-1.5 rounded-2xl border border-white/5 shadow-lg relative mx-auto w-full mb-6">
+        <div className={`absolute top-1.5 bottom-1.5 w-[calc(50%-4px)] bg-[#10b981] rounded-xl transition-all duration-300 ease-out shadow-[0_0_20px_rgba(16,185,129,0.3)] ${displayMode === 'REVENUE' ? "left-1.5" : "left-[calc(50%+2.5px)]"}`} />
+        <button onClick={() => setDisplayMode('REVENUE')} className={`flex-1 py-3 text-center text-[11px] sm:text-xs font-black uppercase tracking-widest transition-all relative z-10 ${displayMode === 'REVENUE' ? "text-gray-950" : "text-gray-500 hover:text-white"}`}>Umsatz</button>
+        <button onClick={() => setDisplayMode('JOBS')} className={`flex-1 py-3 text-center text-[11px] sm:text-xs font-black uppercase tracking-widest transition-all relative z-10 ${displayMode === 'JOBS' ? "text-gray-950" : "text-gray-500 hover:text-white"}`}>Aufträge</button>
+      </div>
+
       {/* Metrics */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="bg-[#161616] p-5 rounded-[24px] border border-white/5">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-[#10b981]/10 rounded-lg"><Activity className="w-5 h-5 text-[#10b981]" /></div>
-            <span className="text-[10px] font-black tracking-widest text-gray-400 uppercase">Aufträge</span>
-          </div>
-          <div className="text-3xl font-black text-white">{jobs.length}</div>
-        </div>
-
-        <div className="bg-[#161616] p-5 rounded-[24px] border border-white/5">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-[#10b981]/10 rounded-lg"><DollarSign className="w-5 h-5 text-[#10b981]" /></div>
-            <span className="text-[10px] font-black tracking-widest text-gray-400 uppercase">Umsatz Total</span>
-          </div>
-          <div className="text-3xl font-black text-[#10b981]">CHF {totalRevenue}</div>
-        </div>
-      </div>
-
-      <div className="bg-[#161616] p-5 rounded-[24px] border border-white/5 mb-8 flex justify-between items-center">
-         <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Wallet className="w-4 h-4 text-red-400" />
-              <span className="text-[10px] font-black tracking-widest text-gray-400 uppercase">Offene Zahlungen</span>
+      {displayMode === 'REVENUE' ? (
+        <>
+          <div className="bg-[#161616] p-5 rounded-[24px] border border-[#10b981]/10 mb-4 shadow-[0_0_30px_rgba(16,185,129,0.05)]">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-2 bg-[#10b981]/10 rounded-lg"><DollarSign className="w-5 h-5 text-[#10b981]" /></div>
+              <span className="text-[10px] font-black tracking-widest text-[#10b981] uppercase">Umsatz Total</span>
             </div>
-            <div className="text-2xl font-black text-white">CHF {totalUnpaid}</div>
-         </div>
-         <div className="text-right">
-            <div className="text-[10px] font-black tracking-widest text-gray-400 uppercase mb-1">Bezahlt</div>
-            <div className="text-xl font-black text-gray-300">CHF {totalPaid}</div>
-         </div>
-      </div>
+            <div className="text-4xl font-black text-white">CHF {totalRevenue}</div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 mb-8">
+            <div className="bg-[#161616] p-5 rounded-[24px] border border-white/5">
+                <div className="text-[10px] font-black tracking-widest text-gray-500 uppercase mb-1">Bezahlt</div>
+                <div className="text-2xl font-black text-[#10b981]">CHF {totalPaid}</div>
+            </div>
+            <div className="bg-[#161616] p-5 rounded-[24px] border border-white/5">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <Wallet className="w-3 h-3 text-red-500" />
+                  <span className="text-[10px] font-black tracking-widest text-red-500 uppercase">Offen</span>
+                </div>
+                <div className="text-2xl font-black text-white">CHF {totalUnpaid}</div>
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="bg-[#161616] p-5 rounded-[24px] border border-[#10b981]/10 mb-4 shadow-[0_0_30px_rgba(16,185,129,0.05)]">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-2 bg-[#10b981]/10 rounded-lg"><Activity className="w-5 h-5 text-[#10b981]" /></div>
+              <span className="text-[10px] font-black tracking-widest text-[#10b981] uppercase">Aufträge Total</span>
+            </div>
+            <div className="text-4xl font-black text-white">{jobs.length}</div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3 mb-8">
+            <div className="bg-[#161616] p-4 rounded-[20px] border border-white/5 text-center">
+                <div className="text-[10px] font-black tracking-widest text-gray-400 uppercase mb-1">Erledigt</div>
+                <div className="text-xl font-black text-white">{completedJobs}</div>
+            </div>
+            <div className="bg-[#161616] p-4 rounded-[20px] border border-white/5 text-center">
+                <div className="text-[10px] font-black tracking-widest text-gray-400 uppercase mb-1">Abholbereit</div>
+                <div className="text-xl font-black text-[#10b981]">{readyJobs}</div>
+            </div>
+            <div className="bg-[#161616] p-4 rounded-[20px] border border-white/5 text-center">
+                <div className="text-[10px] font-black tracking-widest text-gray-400 uppercase mb-1">Offen</div>
+                <div className="text-xl font-black text-red-400">{pendingJobs}</div>
+            </div>
+          </div>
+        </>
+      )}
 
       <button 
         onClick={handleExportCSV} 

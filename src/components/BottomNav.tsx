@@ -54,10 +54,10 @@ export function BottomNav() {
               <Home className="w-5 h-5" /> Dashboard Hub
             </Link>
             <Link href="/admin/jobs" className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold transition-colors ${pathname === '/admin/jobs' ? 'bg-[#10b981]/10 text-[#10b981]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
-              <ClipboardList className="w-5 h-5" /> Warteschlange
+              <ClipboardList className="w-5 h-5" /> Aufträge
             </Link>
             <Link href="/admin/customers" className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold transition-colors ${pathname === '/admin/customers' ? 'bg-[#10b981]/10 text-[#10b981]' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
-              <Users className="w-5 h-5" /> Kundenkartei
+              <Users className="w-5 h-5" /> Kunden
             </Link>
          </div>
          <div className="mt-auto space-y-4">

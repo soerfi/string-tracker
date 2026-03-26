@@ -29,7 +29,7 @@ export default async function AdminJobsPage() {
       <TopBar />
 
       <header className="mb-6 pt-4">
-        <h1 className="text-3xl font-black tracking-tight leading-tight">Warteschlange</h1>
+        <h1 className="text-3xl font-black tracking-tight leading-tight">Aufträge</h1>
         <p className="text-sm text-gray-500 font-bold tracking-widest uppercase mt-1">Alle Aufträge</p>
       </header>
 

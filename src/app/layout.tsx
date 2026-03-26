@@ -10,6 +10,10 @@ export const metadata: Metadata = {
   description: 'Smart String Inventory',
 };
 
+export const viewport = {
+  themeColor: '#0a0a0a',
+};
+
 import { Toaster } from 'react-hot-toast';
 
 export default function RootLayout({
@@ -19,7 +23,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-[#0a0a0a] text-white antialiased pb-28 selection:bg-emerald-500/30`}>
+      <body className={`${inter.className} bg-[#0a0a0a] text-white antialiased pb-28 selection:bg-emerald-500/30 select-none`}>
         {children}
         <BottomNav />
         <Toaster 

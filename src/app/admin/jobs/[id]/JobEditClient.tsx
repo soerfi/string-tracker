@@ -75,9 +75,9 @@ export function JobEditClient({ job }: { job: {
   };
 
   const toggleStatusAndSave = async () => {
-    const newStatus = status === 'DONE' ? 'PENDING' : 'DONE';
+    const newStatus = status === 'READY' ? 'PENDING' : 'READY';
     const success = await handleSave(newStatus, isPaid, paymentMethod);
-    if (success && newStatus === 'DONE') {
+    if (success && newStatus === 'READY') {
       router.refresh();
       router.push('/admin');
     }
@@ -86,21 +86,24 @@ export function JobEditClient({ job }: { job: {
   const selectPaymentAndSave = async (method: string | null) => {
     setShowPaymentSelector(false);
     let success = false;
+    let newStatus = status;
     if (method) {
-      success = await handleSave(status, true, method);
+      if (status === 'READY') newStatus = 'COMPLETED';
+      success = await handleSave(newStatus, true, method);
     } else {
-      success = await handleSave(status, false, null);
+      if (status === 'COMPLETED') newStatus = 'READY';
+      success = await handleSave(newStatus, false, null);
     }
     if (success) {
       router.refresh();
-      router.push('/admin');
+      router.back();
     }
   };
 
   return (
     <div className="pb-32 select-none">
       <header className="sticky top-0 z-50 bg-[#0a0a0a]/90 backdrop-blur-md p-6 border-b border-white/5 flex items-center gap-4">
-        <button onClick={() => router.push('/admin')} className="w-10 h-10 bg-[#161616] rounded-xl flex items-center justify-center hover:bg-white/10 transition-colors border border-white/5">
+        <button onClick={() => router.back()} className="w-10 h-10 bg-[#161616] rounded-xl flex items-center justify-center hover:bg-white/10 transition-colors border border-white/5">
           <ChevronLeft className="w-5 h-5 text-gray-400" />
         </button>
         <div>
@@ -144,26 +147,26 @@ export function JobEditClient({ job }: { job: {
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Längs (kg)</label>
-                <input type="number" value={tensionMain} onChange={e => setTensionMain(e.target.value)} className="w-full bg-[#0a0a0a] border border-white/5 rounded-xl px-4 py-3 text-white font-bold focus:border-[#10b981] outline-none select-text" />
+                <input type="number" value={tensionMain} onChange={e => setTensionMain(e.target.value)} onBlur={e => fetch(`/api/jobs/${job.id}`, { method: 'PATCH', body: JSON.stringify({ tensionMain: parseFloat(e.target.value) }) })} className="w-full bg-[#0a0a0a] border border-white/5 rounded-xl px-4 py-3 text-white font-bold focus:border-[#10b981] outline-none select-text" />
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Quer (kg)</label>
-                <input type="number" value={tensionCross} onChange={e => setTensionCross(e.target.value)} className="w-full bg-[#0a0a0a] border border-white/5 rounded-xl px-4 py-3 text-white font-bold focus:border-[#10b981] outline-none select-text" />
+                <input type="number" value={tensionCross} onChange={e => setTensionCross(e.target.value)} onBlur={e => fetch(`/api/jobs/${job.id}`, { method: 'PATCH', body: JSON.stringify({ tensionCross: parseFloat(e.target.value) }) })} className="w-full bg-[#0a0a0a] border border-white/5 rounded-xl px-4 py-3 text-white font-bold focus:border-[#10b981] outline-none select-text" />
               </div>
             </div>
 
             <div className="space-y-2">
               <label className="flex items-center justify-between p-3 bg-[#0a0a0a] border border-white/5 rounded-xl cursor-pointer hover:border-[#10b981]/50 transition-colors">
                 <span className="font-bold text-sm text-gray-300">Ösen intakt</span>
-                <input type="checkbox" checked={grommetsOk} onChange={e => setGrommetsOk(e.target.checked)} className="w-5 h-5 accent-[#10b981]" />
+                <input type="checkbox" checked={grommetsOk} onChange={e => { setGrommetsOk(e.target.checked); fetch(`/api/jobs/${job.id}`, { method: 'PATCH', body: JSON.stringify({ grommetsOk: e.target.checked }) }); }} className="w-5 h-5 accent-[#10b981]" />
               </label>
               <label className="flex items-center justify-between p-3 bg-[#0a0a0a] border border-white/5 rounded-xl cursor-pointer hover:border-[#10b981]/50 transition-colors">
                 <span className="font-bold text-sm text-gray-300">Griff intakt</span>
-                <input type="checkbox" checked={gripOk} onChange={e => setGripOk(e.target.checked)} className="w-5 h-5 accent-[#10b981]" />
+                <input type="checkbox" checked={gripOk} onChange={e => { setGripOk(e.target.checked); fetch(`/api/jobs/${job.id}`, { method: 'PATCH', body: JSON.stringify({ gripOk: e.target.checked }) }); }} className="w-5 h-5 accent-[#10b981]" />
               </label>
-              <label className="flex items-center justify-between p-3 bg-[#0a0a0a] border ${changeOvergrip ? 'border-[#10b981]/50 bg-[#10b981]/5' : 'border-white/5'} rounded-xl cursor-pointer hover:border-[#10b981]/50 transition-colors">
+              <label className="flex items-center justify-between p-3 bg-[#0a0a0a] border border-white/5 rounded-xl cursor-pointer hover:border-[#10b981]/50 transition-colors">
                 <span className={`font-bold text-sm ${changeOvergrip ? 'text-[#10b981]' : 'text-gray-300'}`}>Overgrip ersetzen</span>
-                <input type="checkbox" checked={changeOvergrip} onChange={e => setChangeOvergrip(e.target.checked)} className="w-5 h-5 accent-[#10b981]" />
+                <input type="checkbox" checked={changeOvergrip} onChange={e => { setChangeOvergrip(e.target.checked); fetch(`/api/jobs/${job.id}`, { method: 'PATCH', body: JSON.stringify({ changeOvergrip: e.target.checked }) }); }} className="w-5 h-5 accent-[#10b981]" />
               </label>
             </div>
           </div>
@@ -173,6 +176,7 @@ export function JobEditClient({ job }: { job: {
             <textarea 
               value={notes} 
               onChange={(e) => setNotes(e.target.value)}
+              onBlur={(e) => fetch(`/api/jobs/${job.id}`, { method: 'PATCH', body: JSON.stringify({ notes: e.target.value }) })}
               rows={3}
               className="w-full bg-[#161616] border border-white/5 rounded-2xl px-5 py-4 text-white font-medium focus:outline-none focus:border-[#10b981] transition shadow-inner resize-none select-text"
               placeholder="Zusätzliche Notizen zum Auftrag..."
@@ -189,6 +193,7 @@ export function JobEditClient({ job }: { job: {
                   type="number" 
                   value={price} 
                   onChange={(e) => setPrice(e.target.value)}
+                  onBlur={(e) => fetch(`/api/jobs/${job.id}`, { method: 'PATCH', body: JSON.stringify({ price: parseFloat(e.target.value) }) })}
                   className="w-full bg-[#0a0a0a] border border-white/5 rounded-xl px-4 py-3 text-white font-black text-lg focus:outline-none focus:border-[#10b981] transition shadow-inner select-text"
                   placeholder="50"
                 />
@@ -224,12 +229,12 @@ export function JobEditClient({ job }: { job: {
             <button 
               onClick={toggleStatusAndSave}
               disabled={isSaving}
-              className={`w-full py-6 rounded-3xl font-black text-xl flex items-center justify-center gap-3 transition-all ${status === 'DONE' ? 'bg-[#10b981]/10 text-[#10b981] border-2 border-[#10b981]/50 shadow-[0_0_30px_rgba(16,185,129,0.1)]' : 'bg-white/5 border border-white/10 text-white hover:bg-white/10'}`}
+              className={`w-full py-6 rounded-3xl font-black text-xl flex items-center justify-center gap-3 transition-all ${status === 'READY' || status === 'COMPLETED' ? 'bg-[#10b981]/10 text-[#10b981] border-2 border-[#10b981]/50 shadow-[0_0_30px_rgba(16,185,129,0.1)]' : 'bg-white/5 border border-white/10 text-white hover:bg-white/10'}`}
             >
-              {status === 'DONE' ? (
-                <><CheckCircle2 className="w-7 h-7" /> Auftrag Erledigt</>
+              {status === 'READY' || status === 'COMPLETED' ? (
+                <><CheckCircle2 className="w-7 h-7" /> Abholbereit</>
               ) : (
-                <><Clock className="w-7 h-7 text-gray-400" /> Als Erledigt markieren</>
+                <><Clock className="w-7 h-7 text-gray-400" /> Als Abholbereit markieren</>
               )}
             </button>
           </div>
@@ -241,9 +246,9 @@ export function JobEditClient({ job }: { job: {
           <button 
             onClick={async () => {
               const success = await handleSave(status, isPaid, paymentMethod);
-              if (success && status === 'DONE') {
+              if (success && (status === 'COMPLETED' || status === 'DONE')) {
                 router.refresh();
-                router.push('/admin');
+                router.back();
               }
             }}
             disabled={isSaving}

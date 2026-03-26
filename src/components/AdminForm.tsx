@@ -45,6 +45,8 @@ export function AdminForm({
   const [racketId, setRacketId] = useState("");
   const [racketBrand, setRacketBrand] = useState("");
   const [racketModel, setRacketModel] = useState("");
+  const [racketGrip, setRacketGrip] = useState("L3");
+  const [racketWeight, setRacketWeight] = useState("300");
   
   const [localPlayers, setLocalPlayers] = useState(players);
   const selectedPlayerRackets = localPlayers.find(p => p.id === customerId)?.rackets || [];
@@ -202,7 +204,7 @@ export function AdminForm({
         playerId: customerId === "new" ? null : customerId,
         playerName, email, phone,
         racketId: racketId === "new" ? null : racketId,
-        racketBrand, racketModel,
+        racketBrand, racketModel, racketGrip, racketWeight,
         stringId,
         tensionMain: tensionMain ? parseFloat(tensionMain) : null,
         tensionCross: tensionCross ? parseFloat(tensionCross) : null,
@@ -340,19 +342,51 @@ export function AdminForm({
 
                 {(racketId === "new" || customerId === "new") && (
                   <div className="bg-[#161616] border border-white/5 p-4 rounded-[20px] space-y-4 shadow-lg">
-                    <CustomSelect 
-                      value={racketBrand}
-                      onChange={(v) => { setRacketBrand(v); setRacketModel(""); }}
-                      placeholder="Marke auswählen (z.B. Head)"
-                      options={Array.from(new Set(racketPresets.map(p => p.brand))).map(b => ({ value: b, label: b }))}
-                    />
-                    {racketBrand && (
+                    <div>
+                      <label className="text-[10px] font-black tracking-widest text-[#10b981] uppercase ml-1 mb-1 block">Marke</label>
                       <CustomSelect 
-                        value={racketModel}
-                        onChange={(v) => setRacketModel(v)}
-                        placeholder="Modell auswählen (z.B. Speed Pro)"
-                        options={racketPresets.filter(p => p.brand === racketBrand).map(p => ({ value: p.model, label: p.model }))}
+                        value={racketBrand}
+                        onChange={(v) => { setRacketBrand(v); setRacketModel(""); }}
+                        placeholder="Marke auswählen (z.B. Head)"
+                        options={Array.from(new Set(racketPresets.map(p => p.brand))).map(b => ({ value: b, label: b }))}
                       />
+                    </div>
+                    {racketBrand && (
+                      <div>
+                        <label className="text-[10px] font-black tracking-widest text-[#10b981] uppercase ml-1 mb-1 block">Modell</label>
+                        <CustomSelect 
+                          value={racketModel}
+                          onChange={(v) => setRacketModel(v)}
+                          placeholder="Modell auswählen (z.B. Speed Pro)"
+                          options={racketPresets.filter(p => p.brand === racketBrand).map(p => ({ value: p.model, label: p.model }))}
+                        />
+                      </div>
+                    )}
+                    {racketBrand && racketModel && (
+                      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-white/5">
+                        <div>
+                          <label className="text-[10px] font-black tracking-widest text-gray-500 uppercase ml-1 mb-1 block">Griffgrösse</label>
+                          <CustomSelect 
+                            value={racketGrip}
+                            onChange={(v) => setRacketGrip(v)}
+                            placeholder="L3"
+                            options={["L0", "L1", "L2", "L3", "L4", "L5"].map(l => ({ value: l, label: l }))}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-black tracking-widest text-gray-500 uppercase ml-1 mb-1 block">Gewicht (g)</label>
+                          <div className="relative">
+                            <input
+                              type="number"
+                              value={racketWeight}
+                              onChange={(e) => setRacketWeight(e.target.value)}
+                              className="w-full bg-[#0a0a0a] border border-white/5 rounded-xl px-4 py-3 text-white font-bold text-sm focus:outline-none focus:border-[#10b981] transition shadow-inner select-text"
+                              placeholder="300"
+                            />
+                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-sm pointer-events-none">g</span>
+                          </div>
+                        </div>
+                      </div>
                     )}
                   </div>
                 )}

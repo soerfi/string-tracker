@@ -59,10 +59,7 @@ export default function SettingsPage() {
           </button>
         </div>
         
-        <div className="bg-[#161616] border border-white/5 rounded-3xl p-6 shadow-lg">
-          <h2 className="text-[11px] font-bold tracking-widest text-[#10b981] uppercase mb-4">Darstellung</h2>
-          <div className="text-gray-400 text-sm">Der Dark Mode ist permanent aktiviert, um den Kontrast zu gewährleisten.</div>
-        </div>
+
       </div>
     </main>
   );

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Trash2, Wallet } from 'lucide-react';
+import { ConfirmModal } from './ConfirmModal';
 
 interface JobType {
   id: string;
@@ -19,16 +20,23 @@ interface JobType {
   createdAt: string | Date;
 }
 
-export function AdminJobsClient({ initialJobs, hideActions = false, statusType = "ALL" }: { initialJobs: JobType[], hideActions?: boolean, statusType?: "PENDING" | "UNPAID" | "ALL" }) {
+export function AdminJobsClient({ initialJobs, hideActions = false, statusType = "ALL" }: { initialJobs: JobType[], hideActions?: boolean, statusType?: "PENDING" | "READY" | "COMPLETED" | "ALL" }) {
   const [jobs, setJobs] = useState(initialJobs);
 
-  const deleteJob = async (id: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    if (!confirm("Auftrag wirklich löschen?")) return;
+  const [jobToDelete, setJobToDelete] = useState<string | null>(null);
+
+  const confirmDeleteJob = async () => {
+    if(!jobToDelete) return;
     try {
-      const res = await fetch(`/api/jobs/${id}`, { method: 'DELETE' });
-      if (res.ok) setJobs(jobs.filter(j => j.id !== id));
+      const res = await fetch(`/api/jobs/${jobToDelete}`, { method: 'DELETE' });
+      if (res.ok) setJobs(jobs.filter(j => j.id !== jobToDelete));
     } catch(err) { console.error(err); }
+    setJobToDelete(null);
+  };
+
+  const deleteJob = (id: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    setJobToDelete(id);
   };
 
 
@@ -39,7 +47,7 @@ export function AdminJobsClient({ initialJobs, hideActions = false, statusType =
       const res = await fetch(`/api/jobs/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isPaid: true })
+        body: JSON.stringify({ isPaid: true, status: 'COMPLETED' })
       });
       if (res.ok) setJobs(jobs.filter(j => j.id !== id));
     } catch(err) { console.error(err); }
@@ -49,6 +57,13 @@ export function AdminJobsClient({ initialJobs, hideActions = false, statusType =
 
   return (
     <>
+      <ConfirmModal 
+        isOpen={!!jobToDelete} 
+        title="Auftrag löschen" 
+        message="Möchtest du diesen Auftrag wirklich Unwiderruflich löschen?" 
+        onConfirm={confirmDeleteJob} 
+        onCancel={() => setJobToDelete(null)} 
+      />
       {jobs.map(job => (
         <Link href={`/admin/jobs/${job.id}`} key={job.id} className="bg-[#161616] p-4 rounded-[24px] border border-white/5 flex flex-col gap-3 hover:border-white/10 transition-colors active:scale-[0.98] group relative overflow-hidden shadow-lg">
           <div className="flex items-center justify-between relative z-10 w-full">
@@ -82,7 +97,7 @@ export function AdminJobsClient({ initialJobs, hideActions = false, statusType =
             
             {!hideActions && (
               <div className="flex gap-2 relative z-20 shrink-0 border-l border-white/5 pl-3">
-                {statusType === 'UNPAID' && (
+                {statusType === 'READY' && (
                   <button onClick={(e) => markPaid(job.id, e)} className="px-4 py-2 bg-red-500 text-white font-black text-[10px] sm:text-[11px] uppercase tracking-widest rounded-xl hover:bg-red-600 transition shadow-[0_0_15px_rgba(239,68,68,0.3)] flex items-center gap-1.5">
                     <Wallet className="w-3.5 h-3.5" /> Bezahlt
                   </button>

@@ -46,7 +46,7 @@ export async function POST(req: Request) {
 
     const token = uuidv4();
 
-    const { racketId, stringId, tensionMain, tensionCross, notes, deadline, grommetsOk, gripOk, changeOvergrip, racketBrand, racketModel } = body;
+    const { racketId, stringId, tensionMain, tensionCross, notes, deadline, grommetsOk, gripOk, changeOvergrip, racketBrand, racketModel, racketGrip, racketWeight } = body;
 
     let finalRacketId = racketId;
 
@@ -55,7 +55,9 @@ export async function POST(req: Request) {
         data: {
           playerId: player.id,
           brand: racketBrand,
-          model: racketModel
+          model: racketModel,
+          gripSize: racketGrip || "L3",
+          weight: racketWeight ? parseInt(racketWeight) : 300
         }
       });
       finalRacketId = newRacket.id;
