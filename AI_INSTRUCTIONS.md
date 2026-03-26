@@ -51,3 +51,9 @@ Welcome, future AI! You are working on "String Tracker", a modern Next.js CRM de
 - Instead, apps maintain a distinct internal host port (e.g., `8000:80` for App Suite, `3005:3000` for Wheel of Fortune). 
 - To add a new domain, simply append the routing rule to the central `/Users/soerfi/illUMATE Dropbox/Markus Schweingruber/Antigravity Projects/global-proxy/Caddyfile`.
 - Execute `./deploy-proxy.sh` inside the `global-proxy` directory to instantly apply domain changes to the server without downtime.
+
+## 🎾 2026-03-26: Admin UI/UX Pro-Max & Racket Catalog
+- **Strict Data Entry**: Transitioned `racketBrand` and `racketModel` from free-text inputs to enforced dropdown selections to prevent database fragmentation (e.g. "Head" vs "head" vs "HED").
+- **RacketPreset Model**: Created a new database model that serves as the single source of truth for the Racket Catalog. The catalog defaults to major brands (Head, Wilson, Babolat, Yonex) but can be expanded manually in Settings.
+- **CustomSelect Integration**: Replaced standard native HTML `<select>` or `<input>` fields with modern, searchable, styled `CustomSelect` components in both the Walk-in Wizard (`AdminForm.tsx`) and `CustomerDetailClient.tsx`.
+- **Form Parity**: Restored critical input fields (Customer Email, Job Deadline) natively to the new wizard structure, which were missed during the initial modal-to-page refactor. **Learning**: Always cross-check legacy massive-modals against their new modularized counterparts line-by-line to guarantee 1:1 feature parity.
