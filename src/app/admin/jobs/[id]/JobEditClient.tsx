@@ -19,6 +19,7 @@ export function JobEditClient({ job }: { job: {
   gripOk: boolean;
   changeOvergrip: boolean;
   isPaid: boolean;
+  paymentMethod: string | null;
   player: { name: string; racketBrand: string | null; racketModel: string | null };
   string: { brand: string; model: string };
 } }) {
@@ -31,11 +32,14 @@ export function JobEditClient({ job }: { job: {
   const [gripOk, setGripOk] = useState(job.gripOk);
   const [changeOvergrip, setChangeOvergrip] = useState(job.changeOvergrip);
   const [isPaid, setIsPaid] = useState(job.isPaid);
+  const [paymentMethod, setPaymentMethod] = useState(job.paymentMethod);
+  const [showPaymentSelector, setShowPaymentSelector] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [status, setStatus] = useState(job.status || "PENDING");
 
-  const handleSave = async (updatedStatus = status) => {
+  const handleSave = async (updatedStatus = status, updatedIsPaid = isPaid, updatedPaymentMethod = paymentMethod) => {
     setIsSaving(true);
+    let success = false;
     try {
       const res = await fetch(`/api/jobs/${job.id}`, {
         method: 'PATCH',
@@ -44,7 +48,8 @@ export function JobEditClient({ job }: { job: {
           price: parseFloat(price),
           notes,
           status: updatedStatus,
-          isPaid,
+          isPaid: updatedIsPaid,
+          paymentMethod: updatedPaymentMethod,
           tensionMain: tensionMain ? parseFloat(tensionMain) : null,
           tensionCross: tensionCross ? parseFloat(tensionCross) : null,
           grommetsOk,
@@ -54,7 +59,10 @@ export function JobEditClient({ job }: { job: {
       });
       if (res.ok) {
         setStatus(updatedStatus);
+        setIsPaid(updatedIsPaid);
+        setPaymentMethod(updatedPaymentMethod);
         toast.success("Gespeichert");
+        success = true;
       } else {
         toast.error("Fehler beim Speichern");
       }
@@ -63,11 +71,28 @@ export function JobEditClient({ job }: { job: {
       toast.error("Fehler beim Speichern");
     }
     setIsSaving(false);
+    return success;
   };
 
-  const toggleStatusAndSave = () => {
+  const toggleStatusAndSave = async () => {
     const newStatus = status === 'DONE' ? 'PENDING' : 'DONE';
-    handleSave(newStatus);
+    const success = await handleSave(newStatus, isPaid, paymentMethod);
+    if (success && newStatus === 'DONE') {
+      router.push('/admin');
+    }
+  };
+
+  const selectPaymentAndSave = async (method: string | null) => {
+    setShowPaymentSelector(false);
+    let success = false;
+    if (method) {
+      success = await handleSave(status, true, method);
+    } else {
+      success = await handleSave(status, false, null);
+    }
+    if (success) {
+      router.push('/admin');
+    }
   };
 
   return (
@@ -157,13 +182,28 @@ export function JobEditClient({ job }: { job: {
               </div>
             </div>
 
-            <label className={`flex items-center justify-between p-4 border rounded-xl cursor-pointer transition-colors ${isPaid ? 'bg-gradient-to-r from-[#10b981]/20 to-transparent border-[#10b981]/40 text-[#10b981]' : 'bg-[#0a0a0a] border-white/5 text-gray-300 hover:border-[#10b981]/50'}`}>
-              <div className="flex items-center gap-2">
-                <CircleDollarSign className="w-5 h-5" />
-                <span className="font-black">Rechnung bezahlt</span>
+            {showPaymentSelector ? (
+              <div className="flex flex-col gap-2 p-4 bg-[#161616] border border-white/10 rounded-xl shadow-lg animate-in fade-in slide-in-from-top-2">
+                <div className="text-xs font-bold text-gray-400 uppercase mb-2 text-center tracking-widest">Wie wurde bezahlt?</div>
+                <div className="grid grid-cols-3 gap-2">
+                  <button onClick={() => selectPaymentAndSave('Bar')} className="py-3 px-2 bg-white/5 hover:bg-[#10b981]/10 hover:text-[#10b981] border border-white/10 hover:border-[#10b981]/50 rounded-lg text-sm font-black transition-colors rounded-xl flex items-center justify-center">Bar</button>
+                  <button onClick={() => selectPaymentAndSave('Twint')} className="py-3 px-2 bg-white/5 hover:bg-[#10b981]/10 hover:text-[#10b981] border border-white/10 hover:border-[#10b981]/50 rounded-lg text-sm font-black transition-colors rounded-xl flex items-center justify-center">Twint</button>
+                  <button onClick={() => selectPaymentAndSave('Andere')} className="py-3 px-2 bg-white/5 hover:bg-[#10b981]/10 hover:text-[#10b981] border border-white/10 hover:border-[#10b981]/50 rounded-lg text-sm font-black transition-colors rounded-xl flex items-center justify-center">Andere</button>
+                </div>
+                <button onClick={() => selectPaymentAndSave(null)} className="w-full mt-2 py-3 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white border border-red-500/20 rounded-lg text-xs font-black transition-colors rounded-xl">Rechnung ist OFFEN</button>
               </div>
-              <input type="checkbox" checked={isPaid} onChange={e => setIsPaid(e.target.checked)} className="w-6 h-6 accent-[#10b981]" />
-            </label>
+            ) : (
+              <label onClick={(e) => { e.preventDefault(); setShowPaymentSelector(true); }} className={`flex items-center justify-between p-4 border rounded-xl cursor-pointer transition-colors ${isPaid ? 'bg-gradient-to-r from-[#10b981]/20 to-transparent border-[#10b981]/40 text-[#10b981]' : 'bg-[#0a0a0a] border-white/5 text-gray-300 hover:border-[#10b981]/50'}`}>
+                <div className="flex items-center gap-2">
+                  <CircleDollarSign className="w-5 h-5" />
+                  <div className="flex flex-col">
+                    <span className="font-black">Rechnung {isPaid ? 'bezahlt' : 'offen'}</span>
+                    {isPaid && paymentMethod && <span className="text-[10px] uppercase tracking-widest font-bold opacity-80">mit {paymentMethod}</span>}
+                  </div>
+                </div>
+                <input type="checkbox" checked={isPaid} readOnly className="w-6 h-6 accent-[#10b981] pointer-events-none" />
+              </label>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -197,7 +237,7 @@ export function JobEditClient({ job }: { job: {
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/90 to-transparent pointer-events-none z-50">
         <div className="max-w-lg mx-auto">
           <button 
-            onClick={() => handleSave(status)}
+            onClick={() => handleSave(status, isPaid, paymentMethod)}
             disabled={isSaving}
             className="w-full pointer-events-auto bg-[#10b981] text-gray-950 px-6 py-4 rounded-[20px] font-black text-lg flex items-center justify-center gap-2 hover:bg-[#059669] active:scale-[0.98] shadow-2xl transition-all border border-[#10b981]"
           >

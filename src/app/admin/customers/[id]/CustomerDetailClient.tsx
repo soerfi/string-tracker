@@ -20,9 +20,9 @@ export function CustomerDetailClient({ initialCustomer, initialPresets }: { init
 
   // Rackets
   const [editingRacketId, setEditingRacketId] = useState<string|null>(null);
-  const [racketForm, setRacketForm] = useState({ brand: '', model: '', qrCodeToken: '' });
+  const [racketForm, setRacketForm] = useState({ brand: '', model: '', qrCodeToken: '', gripSize: 'L3', weight: 300 });
   const [isAddingRacket, setIsAddingRacket] = useState(false);
-  const [newRacket, setNewRacket] = useState({ brand: '', model: '' });
+  const [newRacket, setNewRacket] = useState({ brand: '', model: '', gripSize: 'L3', weight: 300 });
   const [isScanning, setIsScanning] = useState(false);
   const [scannedToken, setScannedToken] = useState("");
 
@@ -77,12 +77,12 @@ export function CustomerDetailClient({ initialCustomer, initialPresets }: { init
       const res = await fetch(`/api/rackets`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ playerId: customer.id, brand: newRacket.brand, model: newRacket.model, qrCodeToken: scannedToken || undefined })
+        body: JSON.stringify({ playerId: customer.id, brand: newRacket.brand, model: newRacket.model, gripSize: newRacket.gripSize, weight: newRacket.weight, qrCodeToken: scannedToken || undefined })
       });
       if (res.ok) {
         const { racket } = await res.json();
         setCustomer({ ...customer, rackets: [racket, ...customer.rackets] });
-        setNewRacket({ brand: '', model: '' });
+        setNewRacket({ brand: '', model: '', gripSize: 'L3', weight: 300 });
         setScannedToken("");
         toast.success("Racket hinzugefügt");
       }
@@ -195,6 +195,21 @@ export function CustomerDetailClient({ initialCustomer, initialPresets }: { init
                          options={initialPresets.filter(p => p.brand === racketForm.brand).map(p => ({ value: p.model, label: p.model }))} 
                        />
                      )}
+                     <div className="flex gap-3">
+                       <CustomSelect
+                         value={racketForm.gripSize}
+                         onChange={v => setRacketForm({...racketForm, gripSize: v})}
+                         placeholder="Griffstärke"
+                         options={['L0', 'L1', 'L2', 'L3', 'L4'].map(l => ({ value: l, label: l }))}
+                       />
+                       <input 
+                         type="number" 
+                         value={racketForm.weight} 
+                         onChange={e => setRacketForm({...racketForm, weight: parseInt(e.target.value) || 300})} 
+                         className="w-full bg-[#10b981]/10 border border-[#10b981]/30 rounded-xl px-4 py-3 text-[#10b981] font-mono text-sm focus:outline-none" 
+                         placeholder="Gewicht (g)" 
+                       />
+                     </div>
                      <input type="text" value={racketForm.qrCodeToken} onChange={e => setRacketForm({...racketForm, qrCodeToken: e.target.value})} className="w-full bg-[#10b981]/10 border border-[#10b981]/30 rounded-xl px-4 py-3 text-[#10b981] font-mono text-sm focus:outline-none" placeholder="QR Code Token" />
                      <div className="flex gap-2 pt-2">
                        <button onClick={() => saveRacketEdit(racket.id)} className="flex-1 bg-[#10b981] text-gray-950 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-[#059669]">Speichern</button>
@@ -206,9 +221,11 @@ export function CustomerDetailClient({ initialCustomer, initialPresets }: { init
                      <div className="flex-1">
                        <div className="flex items-center gap-2 mb-1">
                          <div className="font-bold text-xl text-white tracking-tight">{racket.brand} {racket.model}</div>
-                         <button onClick={() => { setEditingRacketId(racket.id); setRacketForm({ brand: racket.brand, model: racket.model, qrCodeToken: racket.qrCodeToken }); }} className="text-gray-500 hover:text-[#10b981] p-1"><Edit2 className="w-4 h-4" /></button>
+                         <button onClick={() => { setEditingRacketId(racket.id); setRacketForm({ brand: racket.brand, model: racket.model, qrCodeToken: racket.qrCodeToken, gripSize: racket.gripSize || 'L3', weight: racket.weight || 300 }); }} className="text-gray-500 hover:text-[#10b981] p-1"><Edit2 className="w-4 h-4" /></button>
                        </div>
-                       <div className="text-[10px] uppercase font-black tracking-widest text-[#10b981] bg-[#10b981]/10 px-2 py-1 rounded inline-block border border-[#10b981]/20">ID: {racket.qrCodeToken}</div>
+                       <div className="text-[10px] uppercase font-black tracking-widest text-[#10b981] bg-[#10b981]/10 px-2 py-1 rounded inline-block border border-[#10b981]/20 me-2 mb-2">ID: {racket.qrCodeToken}</div>
+                       <div className="text-[10px] uppercase font-black tracking-widest text-gray-400 bg-white/5 px-2 py-1 rounded inline-block border border-white/10 me-2 mb-2">Griff: {racket.gripSize || 'L3'}</div>
+                       <div className="text-[10px] uppercase font-black tracking-widest text-gray-400 bg-white/5 px-2 py-1 rounded inline-block border border-white/10 mb-2">{racket.weight || 300}g</div>
                      </div>
                      <div className="flex flex-col sm:items-end justify-between sm:justify-center gap-3 w-full sm:w-auto mt-4 sm:mt-0">
                          <a href={`/p/${racket.qrCodeToken}`} target="_blank" className="w-full sm:w-auto bg-[#10b981]/10 text-[#10b981] px-5 py-3 rounded-xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[#10b981]/20 transition-colors border border-[#10b981]/20">
@@ -251,6 +268,21 @@ export function CustomerDetailClient({ initialCustomer, initialPresets }: { init
                           />
                         )}
                       </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                       <CustomSelect
+                         value={newRacket.gripSize}
+                         onChange={v => setNewRacket({...newRacket, gripSize: v})}
+                         placeholder="Griffstärke"
+                         options={['L0', 'L1', 'L2', 'L3', 'L4'].map(l => ({ value: l, label: l }))}
+                       />
+                       <input 
+                         type="number" 
+                         value={newRacket.weight} 
+                         onChange={e => setNewRacket({...newRacket, weight: parseInt(e.target.value) || 300})} 
+                         className="w-full bg-[#0a0a0a] border border-white/5 rounded-xl px-4 py-3 text-white font-medium text-sm focus:outline-none focus:border-[#10b981] transition-colors" 
+                         placeholder="Gewicht (g)" 
+                       />
                     </div>
                     <button onClick={handleAddRacket} disabled={isAddingRacket || !newRacket.brand || !newRacket.model} className="w-full bg-[#10b981] disabled:opacity-50 text-gray-950 py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#059669] transition-all flex justify-center items-center gap-2">
                        {isAddingRacket ? "..." : <><Plus className="w-4 h-4 -ml-1" /> Speichern</>}

@@ -34,6 +34,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     if (body.model !== undefined) updateData.model = body.model;
     if (body.color !== undefined) updateData.color = body.color;
     if (body.notes !== undefined) updateData.notes = body.notes;
+    if (body.gripSize !== undefined) updateData.gripSize = body.gripSize;
+    if (body.weight !== undefined) updateData.weight = body.weight;
 
     const racket = await prisma.racket.update({
       where: { id },

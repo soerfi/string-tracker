@@ -28,6 +28,8 @@ model Racket {
   model           String
   color           String?
   notes           String?
+  gripSize        String      @default("L3")
+  weight          Int         @default(300)
   qrCodeToken     String      @unique @default(uuid())
   playerId        String
   player          Player      @relation(fields: [playerId], references: [id], onDelete: Cascade)
@@ -46,6 +48,7 @@ model TennisString {
   descriptionDe   String
   benefits        String      // JSON stringified array since SQLite lacks String[]
   imageUrl        String?     // External URL or internal file path to the uploaded WebP square thumbnail
+  sortOrder       Int         @default(0)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   jobs            StringJob[]
@@ -71,6 +74,7 @@ model StringJob {
   gripOk          Boolean  @default(true)
   changeOvergrip  Boolean  @default(false)
   isPaid          Boolean  @default(false)
+  paymentMethod   String?
   status          String   @default("PENDING")
   qrCodeToken     String   @unique
   createdAt       DateTime @default(now())

@@ -27,6 +27,7 @@ export default async function AdminDashboard() {
   const unpaidJobs = await prisma.stringJob.findMany({
     where: { status: 'DONE', isPaid: false },
     orderBy: { updatedAt: 'desc' },
+    take: 10,
     include: { player: true, string: true }
   });
 
@@ -40,9 +41,6 @@ export default async function AdminDashboard() {
         <Link href="/admin/new" className="hidden md:flex items-center gap-2 bg-[#10b981] text-gray-950 font-black px-4 py-3 rounded-2xl hover:bg-[#059669] transition shadow-[0_0_20px_rgba(16,185,129,0.2)]">
           <Scan className="w-5 h-5" /> Racket Scannen
         </Link>
-        <div className="w-12 h-12 rounded-2xl md:hidden bg-[#161616] border border-white/5 flex items-center justify-center font-black text-[#10b981] shadow-lg shadow-black/50">
-          A
-        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4 mb-8">

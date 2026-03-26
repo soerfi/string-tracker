@@ -38,6 +38,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     if (body.grommetsOk !== undefined) updateData.grommetsOk = body.grommetsOk;
     if (body.gripOk !== undefined) updateData.gripOk = body.gripOk;
     if (body.changeOvergrip !== undefined) updateData.changeOvergrip = body.changeOvergrip;
+    if (body.paymentMethod !== undefined) updateData.paymentMethod = body.paymentMethod;
 
     const job = await prisma.stringJob.update({
       where: { id },

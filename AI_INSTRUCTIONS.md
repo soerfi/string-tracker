@@ -57,3 +57,10 @@ Welcome, future AI! You are working on "String Tracker", a modern Next.js CRM de
 - **RacketPreset Model**: Created a new database model that serves as the single source of truth for the Racket Catalog. The catalog defaults to major brands (Head, Wilson, Babolat, Yonex) but can be expanded manually in Settings.
 - **CustomSelect Integration**: Replaced standard native HTML `<select>` or `<input>` fields with modern, searchable, styled `CustomSelect` components in both the Walk-in Wizard (`AdminForm.tsx`) and `CustomerDetailClient.tsx`.
 - **Form Parity**: Restored critical input fields (Customer Email, Job Deadline) natively to the new wizard structure, which were missed during the initial modal-to-page refactor. **Learning**: Always cross-check legacy massive-modals against their new modularized counterparts line-by-line to guarantee 1:1 feature parity.
+
+## 📊 2026-03-26: Workflow, Reporting & UI Refinements
+- **Racket Data:** Integrated `gripSize` (L0-L4) and `weight` (g) tracking within the Racket model and Customer forms.
+- **Payment & Workflow:** Completed jobs now redirect to the Hub. Selecting "Paid" presents an interactive payment method modal (Bar, Twint, Andere).
+- **Inventory Logistics:** Implemented `@dnd-kit` drag-and-drop capabilities in the Strings Admin panel, mapping to a new `sortOrder` priority respected during Job creation.
+- **Reports Engine:** Shipped a full `/admin/reports` module offering specific date-range filtering, revenue statistics, and instantaneous job history CSV Exports.
+- **UI & Auth Polish:** Fixed Safari overscroll layout breaks (`overscroll-behavior-y: none`), streamlined the Hub interface (open payments limited to 10 instances, removed obsolete hamburger/branding), and repaired conditional secure cookie handling for un-cached Admin redirects.

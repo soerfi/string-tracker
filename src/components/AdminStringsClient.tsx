@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, Plus, Trash2, Edit2, PackageOpen, ChevronLeft, Droplet, HelpCircle, Save } from 'lucide-react';
+import { X, Plus, Trash2, Edit2, PackageOpen, ChevronLeft, Droplet, HelpCircle, Save, GripVertical } from 'lucide-react';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface TennisString {
   id: string;
@@ -14,6 +17,47 @@ interface TennisString {
   descriptionDe: string;
   benefits: string; // JSON
   imageUrl: string | null;
+  sortOrder?: number;
+}
+
+function SortableStringItem({ s, startEdit, handleDelete }: { s: TennisString, startEdit: any, handleDelete: any }) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: s.id });
+  const style = { transform: CSS.Transform.toString(transform), transition };
+  return (
+    <div ref={setNodeRef} style={style} className="bg-[#161616] border border-white/5 rounded-2xl p-4 flex flex-col gap-3 relative group hover:border-[#10b981]/30 transition-colors">
+      <div {...attributes} {...listeners} className="absolute left-0 top-0 bottom-0 flex items-center justify-center cursor-grab active:cursor-grabbing px-2 w-10 opacity-30 hover:opacity-100 z-10">
+        <GripVertical className="w-5 h-5 text-gray-500" />
+      </div>
+      <div className="pl-6 flex items-start justify-between">
+        <div className="flex items-center gap-4">
+          {s.imageUrl ? (
+            <img src={s.imageUrl} alt={`${s.brand} ${s.model}`} className="w-16 h-16 rounded-xl object-cover bg-white/5 shrink-0 border border-white/10" />
+          ) : (
+            <div className="w-16 h-16 rounded-xl bg-[#202020] border border-white/5 shrink-0 flex items-center justify-center">
+              <Droplet className="w-6 h-6 text-gray-600" />
+            </div>
+          )}
+          <div>
+            <div className="font-bold text-lg text-white leading-tight">{s.brand} {s.model}</div>
+            <div className="text-sm font-bold text-[#10b981] mt-0.5">{s.gauge} • {s.type}</div>
+          </div>
+        </div>
+        <div className="flex gap-1 bg-black/50 p-1 rounded-xl shrink-0 z-20 relative">
+          <button onClick={(e) => { e.stopPropagation(); startEdit(s); }} className="p-2 text-gray-400 hover:text-white rounded-lg transition">
+            <Edit2 className="w-4 h-4" />
+          </button>
+          <button onClick={(e) => { e.stopPropagation(); handleDelete(s.id, s.brand + ' ' + s.model); }} className="p-2 text-red-500/80 hover:text-red-500 rounded-lg transition">
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+      
+      <div className="pl-6 flex gap-2 items-center bg-[#0a0a0a] p-3 rounded-xl border border-white/5 w-max">
+        <PackageOpen className="w-4 h-4 text-[#10b981]" />
+        <span className="text-xs text-gray-300 font-black">{s.baseLifeHours} Std. Basis-Haltbarkeit</span>
+      </div>
+    </div>
+  );
 }
 
 export function AdminStringsClient({ initialStrings }: { initialStrings: TennisString[] }) {
@@ -43,8 +87,32 @@ export function AdminStringsClient({ initialStrings }: { initialStrings: TennisS
     const base = materialBase;
     const surfaceMult = isProfiled ? 0.85 : 1.0;
     const gaugeMult = gauge / 1.25;
-    setCalculatedHours(parseFloat((base * surfaceMult * gaugeMult).toFixed(1)));
   }, [materialBase, isProfiled, gauge]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (active.id !== over?.id) {
+      setStrings((items) => {
+        const oldIndex = items.findIndex((i) => i.id === active.id);
+        const newIndex = items.findIndex((i) => i.id === over?.id);
+        const newItems = arrayMove(items, oldIndex, newIndex);
+        
+        // Save to backend
+        fetch('/api/strings/reorder', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderedIds: newItems.map(i => i.id) })
+        }).catch(e => console.error("Failed to reorder", e));
+
+        return newItems;
+      });
+    }
+  };
 
   const resetForm = () => {
     setBrand("");
@@ -198,38 +266,13 @@ export function AdminStringsClient({ initialStrings }: { initialStrings: TennisS
           </button>
 
           <div className="grid gap-3 mt-6">
-            {strings.map((s) => (
-              <div key={s.id} className="bg-[#161616] border border-white/5 rounded-2xl p-4 flex flex-col gap-3 relative group hover:border-[#10b981]/30 transition-colors">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-4">
-                    {s.imageUrl ? (
-                      <img src={s.imageUrl} alt={`${s.brand} ${s.model}`} className="w-16 h-16 rounded-xl object-cover bg-white/5 shrink-0 border border-white/10" />
-                    ) : (
-                      <div className="w-16 h-16 rounded-xl bg-[#202020] border border-white/5 shrink-0 flex items-center justify-center">
-                        <Droplet className="w-6 h-6 text-gray-600" />
-                      </div>
-                    )}
-                    <div>
-                      <div className="font-bold text-lg text-white leading-tight">{s.brand} {s.model}</div>
-                      <div className="text-sm font-bold text-[#10b981] mt-0.5">{s.gauge} • {s.type}</div>
-                    </div>
-                  </div>
-                  <div className="flex gap-1 bg-black/50 p-1 rounded-xl shrink-0">
-                    <button onClick={() => startEdit(s)} className="p-2 text-gray-400 hover:text-white rounded-lg transition">
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => handleDelete(s.id, s.brand + ' ' + s.model)} className="p-2 text-red-500/80 hover:text-red-500 rounded-lg transition">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="flex gap-2 items-center bg-[#0a0a0a] p-3 rounded-xl border border-white/5 w-max">
-                  <PackageOpen className="w-4 h-4 text-[#10b981]" />
-                  <span className="text-xs text-gray-300 font-black">{s.baseLifeHours} Std. Basis-Haltbarkeit</span>
-                </div>
-              </div>
-            ))}
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={strings.map(s => s.id)} strategy={verticalListSortingStrategy}>
+                {strings.map((s) => (
+                  <SortableStringItem key={s.id} s={s} startEdit={startEdit} handleDelete={handleDelete} />
+                ))}
+              </SortableContext>
+            </DndContext>
             
             {strings.length === 0 && (
               <div className="text-center text-gray-500 font-medium py-10 bg-[#161616] rounded-2xl border border-white/5">

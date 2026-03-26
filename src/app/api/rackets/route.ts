@@ -16,7 +16,7 @@ if (process.env.NODE_ENV === 'production') {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { playerId, brand, model, qrCodeToken } = body;
+    const { playerId, brand, model, qrCodeToken, gripSize, weight } = body;
 
     if (!playerId || !brand || !model) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
@@ -25,7 +25,9 @@ export async function POST(req: Request) {
     const racketData: any = {
       playerId,
       brand,
-      model
+      model,
+      gripSize: gripSize || 'L3',
+      weight: weight || 300
     };
 
     if (qrCodeToken) {

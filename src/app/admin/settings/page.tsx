@@ -33,12 +33,20 @@ export default function SettingsPage() {
           <div className="text-sm text-gray-500 mt-1">Gängige Racket-Modelle (Marke, Modell) für den Wizard anlegen.</div>
         </a>
 
-        <a href="/admin/qr-batch" className="block bg-[#161616] border border-[#10b981]/20 rounded-3xl p-6 shadow-lg hover:border-[#10b981] transition-all group">
+        <a href="/admin/qr-batch" className="block bg-[#161616] border border-[#10b981]/20 rounded-3xl p-6 shadow-lg hover:border-[#10b981] transition-all group mb-4">
           <h2 className="text-[11px] font-bold tracking-widest text-[#10b981] uppercase mb-2">Tools</h2>
           <div className="text-lg font-bold text-white group-hover:text-[#10b981] transition-colors flex items-center gap-2">
             QR-Code Generator & Export &rarr;
           </div>
           <div className="text-sm text-gray-500 mt-1">Generiere reservierte QR-Batch Dateien für den Druck.</div>
+        </a>
+
+        <a href="/admin/reports" className="block bg-[#161616] border border-[#10b981]/20 rounded-3xl p-6 shadow-lg hover:border-[#10b981] transition-all group mb-4">
+          <h2 className="text-[11px] font-bold tracking-widest text-[#10b981] uppercase mb-2">Statistik</h2>
+          <div className="text-lg font-bold text-white group-hover:text-[#10b981] transition-colors flex items-center gap-2">
+            Auswertungen &rarr;
+          </div>
+          <div className="text-sm text-gray-500 mt-1">Umsatzberichte, Filterung nach Datum und CSV-Export.</div>
         </a>
 
         <div className="bg-[#161616] border border-white/5 rounded-3xl p-6 shadow-lg">

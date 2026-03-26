@@ -12,7 +12,7 @@ export async function POST(req: Request) {
       // Set HttpOnly cookie for extremely simple authentication
       response.cookies.set('tca_admin_auth', 'authenticated', {
         httpOnly: true,
-        secure: false, // Allowed over HTTP for direct IP testing
+        secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         path: '/',
         maxAge: 60 * 60 * 24 * 30 // 30 days

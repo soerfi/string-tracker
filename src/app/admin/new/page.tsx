@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function NewJobPage() {
   const strings = await prisma.tennisString.findMany({
-    orderBy: { brand: 'asc' }
+    orderBy: { sortOrder: 'asc' }
   })
   
   const players = await prisma.player.findMany({
