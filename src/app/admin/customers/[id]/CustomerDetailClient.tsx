@@ -5,10 +5,11 @@ import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Edit2, Trash2, QrCode, Plus, Camera, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import { QRScanner } from '@/components/QRScanner';
+import { CustomSelect } from '@/components/CustomSelect';
 import { toast } from 'react-hot-toast';
 import clsx from 'clsx';
 
-export function CustomerDetailClient({ initialCustomer }: { initialCustomer: any }) {
+export function CustomerDetailClient({ initialCustomer, initialPresets }: { initialCustomer: any, initialPresets: any[] }) {
   const router = useRouter();
   const [customer, setCustomer] = useState(initialCustomer);
   const [activeTab, setActiveTab] = useState<'DATEN' | 'RACKETS' | 'HISTORIE'>('DATEN');
@@ -180,8 +181,20 @@ export function CustomerDetailClient({ initialCustomer }: { initialCustomer: any
                  
                  {editingRacketId === racket.id ? (
                    <div className="flex-1 space-y-3 w-full">
-                     <input type="text" value={racketForm.brand} onChange={e => setRacketForm({...racketForm, brand: e.target.value})} className="w-full bg-[#0a0a0a] border border-white/5 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#10b981]" placeholder="Marke" />
-                     <input type="text" value={racketForm.model} onChange={e => setRacketForm({...racketForm, model: e.target.value})} className="w-full bg-[#0a0a0a] border border-white/5 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#10b981]" placeholder="Modell" />
+                     <CustomSelect 
+                       value={racketForm.brand} 
+                       onChange={v => setRacketForm({...racketForm, brand: v, model: ''})} 
+                       placeholder="Marke" 
+                       options={Array.from(new Set(initialPresets.map(p => p.brand))).map(b => ({ value: b as string, label: b as string }))} 
+                     />
+                     {racketForm.brand && (
+                       <CustomSelect 
+                         value={racketForm.model} 
+                         onChange={v => setRacketForm({...racketForm, model: v})} 
+                         placeholder="Modell" 
+                         options={initialPresets.filter(p => p.brand === racketForm.brand).map(p => ({ value: p.model, label: p.model }))} 
+                       />
+                     )}
                      <input type="text" value={racketForm.qrCodeToken} onChange={e => setRacketForm({...racketForm, qrCodeToken: e.target.value})} className="w-full bg-[#10b981]/10 border border-[#10b981]/30 rounded-xl px-4 py-3 text-[#10b981] font-mono text-sm focus:outline-none" placeholder="QR Code Token" />
                      <div className="flex gap-2 pt-2">
                        <button onClick={() => saveRacketEdit(racket.id)} className="flex-1 bg-[#10b981] text-gray-950 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-[#059669]">Speichern</button>
@@ -223,8 +236,20 @@ export function CustomerDetailClient({ initialCustomer }: { initialCustomer: any
                          <Camera className="w-6 h-6" />
                       </button>
                       <div className="flex flex-col sm:flex-row gap-3 flex-1">
-                        <input type="text" value={newRacket.brand} onChange={e => setNewRacket({...newRacket, brand: e.target.value})} className="flex-1 bg-[#0a0a0a] border border-white/5 rounded-xl px-4 py-4 text-sm text-white font-medium focus:outline-none focus:border-[#10b981]" placeholder="Marke (Head)" />
-                        <input type="text" value={newRacket.model} onChange={e => setNewRacket({...newRacket, model: e.target.value})} className="flex-1 bg-[#0a0a0a] border border-white/5 rounded-xl px-4 py-4 text-sm text-white font-medium focus:outline-none focus:border-[#10b981]" placeholder="Modell (Speed)" />
+                        <CustomSelect 
+                          value={newRacket.brand} 
+                          onChange={v => setNewRacket({...newRacket, brand: v, model: ''})} 
+                          placeholder="Marke (Head)" 
+                          options={Array.from(new Set(initialPresets.map(p => p.brand))).map(b => ({ value: b as string, label: b as string }))} 
+                        />
+                        {newRacket.brand && (
+                          <CustomSelect 
+                            value={newRacket.model} 
+                            onChange={v => setNewRacket({...newRacket, model: v})} 
+                            placeholder="Modell (Speed)" 
+                            options={initialPresets.filter(p => p.brand === newRacket.brand).map(p => ({ value: p.model, label: p.model }))} 
+                          />
+                        )}
                       </div>
                     </div>
                     <button onClick={handleAddRacket} disabled={isAddingRacket || !newRacket.brand || !newRacket.model} className="w-full bg-[#10b981] disabled:opacity-50 text-gray-950 py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#059669] transition-all flex justify-center items-center gap-2">

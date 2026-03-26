@@ -83,3 +83,12 @@ model PrePrintedCode {
   status    String   @default("PRINTED") // PRINTED, ASSIGNED
   createdAt DateTime @default(now())
 }
+
+model RacketPreset {
+  id        String   @id @default(cuid())
+  brand     String
+  model     String
+  createdAt DateTime @default(now())
+
+  @@unique([brand, model])
+}

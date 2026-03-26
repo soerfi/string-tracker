@@ -25,6 +25,14 @@ export default function SettingsPage() {
           <div className="text-sm text-gray-500 mt-1">Neue Saiten hinzufügen, Physik-Werte und Preise anpassen.</div>
         </a>
 
+        <a href="/admin/rackets" className="block bg-[#161616] border border-[#10b981]/20 rounded-3xl p-6 shadow-lg hover:border-[#10b981] transition-all group mb-4">
+          <h2 className="text-[11px] font-bold tracking-widest text-[#10b981] uppercase mb-2">Katalog</h2>
+          <div className="text-lg font-bold text-white group-hover:text-[#10b981] transition-colors flex items-center gap-2">
+            Rackets verwalten &rarr;
+          </div>
+          <div className="text-sm text-gray-500 mt-1">Gängige Racket-Modelle (Marke, Modell) für den Wizard anlegen.</div>
+        </a>
+
         <a href="/admin/qr-batch" className="block bg-[#161616] border border-[#10b981]/20 rounded-3xl p-6 shadow-lg hover:border-[#10b981] transition-all group">
           <h2 className="text-[11px] font-bold tracking-widest text-[#10b981] uppercase mb-2">Tools</h2>
           <div className="text-lg font-bold text-white group-hover:text-[#10b981] transition-colors flex items-center gap-2">

@@ -28,10 +28,14 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
 
   if (!customer) return notFound();
 
+  const racketPresets = await prisma.racketPreset.findMany({
+    orderBy: [ { brand: 'asc' }, { model: 'asc' } ]
+  });
+
   return (
     <main className="min-h-[100dvh] bg-[#0a0a0a] text-white p-6 pb-32 font-sans md:ml-[280px]">
       <TopBar />
-      <CustomerDetailClient initialCustomer={customer} />
+      <CustomerDetailClient initialCustomer={customer} initialPresets={racketPresets} />
     </main>
   );
 }

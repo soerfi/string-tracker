@@ -12,7 +12,8 @@ import clsx from 'clsx';
 
 export function AdminForm({ 
   strings, 
-  players 
+  players,
+  racketPresets
 }: { 
   strings: { id: string, brand: string, model: string, gauge: string }[],
   players: { 
@@ -23,7 +24,8 @@ export function AdminForm({
     racketBrand: string|null, 
     racketModel: string|null,
     rackets: { id: string, brand: string, model: string, qrCodeToken: string }[] 
-  }[] 
+  }[],
+  racketPresets: { id: string, brand: string, model: string }[]
 }) {
   const router = useRouter();
   
@@ -338,8 +340,20 @@ export function AdminForm({
 
                 {(racketId === "new" || customerId === "new") && (
                   <div className="bg-[#161616] border border-white/5 p-4 rounded-[20px] space-y-4 shadow-lg">
-                    <input type="text" value={racketBrand} onChange={(e) => setRacketBrand(e.target.value)} className="w-full bg-[#0a0a0a] border border-white/5 rounded-xl px-4 py-4 text-white font-medium focus:outline-none focus:border-[#10b981] transition" placeholder="Marke (z.B. Head, Wilson)" autoFocus />
-                    <input type="text" value={racketModel} onChange={(e) => setRacketModel(e.target.value)} className="w-full bg-[#0a0a0a] border border-white/5 rounded-xl px-4 py-4 text-white font-medium focus:outline-none focus:border-[#10b981] transition" placeholder="Modell (z.B. Speed Pro, Clash)" />
+                    <CustomSelect 
+                      value={racketBrand}
+                      onChange={(v) => { setRacketBrand(v); setRacketModel(""); }}
+                      placeholder="Marke auswählen (z.B. Head)"
+                      options={Array.from(new Set(racketPresets.map(p => p.brand))).map(b => ({ value: b, label: b }))}
+                    />
+                    {racketBrand && (
+                      <CustomSelect 
+                        value={racketModel}
+                        onChange={(v) => setRacketModel(v)}
+                        placeholder="Modell auswählen (z.B. Speed Pro)"
+                        options={racketPresets.filter(p => p.brand === racketBrand).map(p => ({ value: p.model, label: p.model }))}
+                      />
+                    )}
                   </div>
                 )}
               </section>
