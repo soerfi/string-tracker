@@ -375,16 +375,12 @@ export function AdminForm({
                         </div>
                         <div>
                           <label className="text-[10px] font-black tracking-widest text-gray-500 uppercase ml-1 mb-1 block">Gewicht (g)</label>
-                          <div className="relative">
-                            <input
-                              type="number"
-                              value={racketWeight}
-                              onChange={(e) => setRacketWeight(e.target.value)}
-                              className="w-full bg-[#0a0a0a] border border-white/5 rounded-xl px-4 py-3 text-white font-bold text-sm focus:outline-none focus:border-[#10b981] transition shadow-inner select-text"
-                              placeholder="300"
-                            />
-                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-sm pointer-events-none">g</span>
-                          </div>
+                          <CustomSelect 
+                            value={racketWeight}
+                            onChange={(v) => setRacketWeight(v)}
+                            placeholder="Gewicht"
+                            options={Array.from({length: 33}, (_, i) => String(200 + i * 5)).map(w => ({ value: w, label: `${w}g` }))}
+                          />
                         </div>
                       </div>
                     )}
