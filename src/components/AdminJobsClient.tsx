@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Trash2, CheckCircle, Wallet } from 'lucide-react';
+import { Trash2, Wallet } from 'lucide-react';
 
 interface JobType {
   id: string;
@@ -31,17 +31,7 @@ export function AdminJobsClient({ initialJobs, hideActions = false, statusType =
     } catch(err) { console.error(err); }
   };
 
-  const markDone = async (id: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    try {
-      const res = await fetch(`/api/jobs/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'DONE' })
-      });
-      if (res.ok) setJobs(jobs.filter(j => j.id !== id));
-    } catch(err) { console.error(err); }
-  };
+
 
   const markPaid = async (id: string, e: React.MouseEvent) => {
     e.preventDefault();
@@ -92,11 +82,6 @@ export function AdminJobsClient({ initialJobs, hideActions = false, statusType =
             
             {!hideActions && (
               <div className="flex gap-2 relative z-20 shrink-0 border-l border-white/5 pl-3">
-                {statusType === 'PENDING' && (
-                  <button onClick={(e) => markDone(job.id, e)} className="px-4 py-2 bg-[#10b981] text-gray-950 font-black text-[10px] sm:text-[11px] uppercase tracking-widest rounded-xl hover:bg-[#059669] transition shadow-[0_0_15px_rgba(16,185,129,0.3)] flex items-center gap-1.5">
-                    <CheckCircle className="w-3.5 h-3.5" /> Erledigt
-                  </button>
-                )}
                 {statusType === 'UNPAID' && (
                   <button onClick={(e) => markPaid(job.id, e)} className="px-4 py-2 bg-red-500 text-white font-black text-[10px] sm:text-[11px] uppercase tracking-widest rounded-xl hover:bg-red-600 transition shadow-[0_0_15px_rgba(239,68,68,0.3)] flex items-center gap-1.5">
                     <Wallet className="w-3.5 h-3.5" /> Bezahlt

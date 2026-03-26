@@ -78,6 +78,7 @@ export function JobEditClient({ job }: { job: {
     const newStatus = status === 'DONE' ? 'PENDING' : 'DONE';
     const success = await handleSave(newStatus, isPaid, paymentMethod);
     if (success && newStatus === 'DONE') {
+      router.refresh();
       router.push('/admin');
     }
   };
@@ -91,12 +92,13 @@ export function JobEditClient({ job }: { job: {
       success = await handleSave(status, false, null);
     }
     if (success) {
+      router.refresh();
       router.push('/admin');
     }
   };
 
   return (
-    <div className="pb-32">
+    <div className="pb-32 select-none">
       <header className="sticky top-0 z-50 bg-[#0a0a0a]/90 backdrop-blur-md p-6 border-b border-white/5 flex items-center gap-4">
         <button onClick={() => router.push('/admin')} className="w-10 h-10 bg-[#161616] rounded-xl flex items-center justify-center hover:bg-white/10 transition-colors border border-white/5">
           <ChevronLeft className="w-5 h-5 text-gray-400" />
@@ -142,11 +144,11 @@ export function JobEditClient({ job }: { job: {
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Längs (kg)</label>
-                <input type="number" value={tensionMain} onChange={e => setTensionMain(e.target.value)} className="w-full bg-[#0a0a0a] border border-white/5 rounded-xl px-4 py-3 text-white font-bold focus:border-[#10b981] outline-none" />
+                <input type="number" value={tensionMain} onChange={e => setTensionMain(e.target.value)} className="w-full bg-[#0a0a0a] border border-white/5 rounded-xl px-4 py-3 text-white font-bold focus:border-[#10b981] outline-none select-text" />
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Quer (kg)</label>
-                <input type="number" value={tensionCross} onChange={e => setTensionCross(e.target.value)} className="w-full bg-[#0a0a0a] border border-white/5 rounded-xl px-4 py-3 text-white font-bold focus:border-[#10b981] outline-none" />
+                <input type="number" value={tensionCross} onChange={e => setTensionCross(e.target.value)} className="w-full bg-[#0a0a0a] border border-white/5 rounded-xl px-4 py-3 text-white font-bold focus:border-[#10b981] outline-none select-text" />
               </div>
             </div>
 
@@ -166,6 +168,17 @@ export function JobEditClient({ job }: { job: {
             </div>
           </div>
 
+          <div className="space-y-2">
+            <label className="text-[11px] font-bold tracking-widest text-gray-500 uppercase ml-1">Bemerkung</label>
+            <textarea 
+              value={notes} 
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+              className="w-full bg-[#161616] border border-white/5 rounded-2xl px-5 py-4 text-white font-medium focus:outline-none focus:border-[#10b981] transition shadow-inner resize-none select-text"
+              placeholder="Zusätzliche Notizen zum Auftrag..."
+            />
+          </div>
+
           <div className="bg-[#161616] border border-white/5 rounded-3xl p-5 shadow-inner space-y-4">
             <h3 className="text-[11px] font-bold tracking-widest text-gray-400 uppercase ml-1">Auftrag & Finanzen</h3>
             
@@ -176,7 +189,7 @@ export function JobEditClient({ job }: { job: {
                   type="number" 
                   value={price} 
                   onChange={(e) => setPrice(e.target.value)}
-                  className="w-full bg-[#0a0a0a] border border-white/5 rounded-xl px-4 py-3 text-white font-black text-lg focus:outline-none focus:border-[#10b981] transition shadow-inner"
+                  className="w-full bg-[#0a0a0a] border border-white/5 rounded-xl px-4 py-3 text-white font-black text-lg focus:outline-none focus:border-[#10b981] transition shadow-inner select-text"
                   placeholder="50"
                 />
               </div>
@@ -206,17 +219,6 @@ export function JobEditClient({ job }: { job: {
             )}
           </div>
 
-          <div className="space-y-2">
-            <label className="text-[11px] font-bold tracking-widest text-gray-500 uppercase ml-1">Bemerkung</label>
-            <textarea 
-              value={notes} 
-              onChange={(e) => setNotes(e.target.value)}
-              rows={3}
-              className="w-full bg-[#161616] border border-white/5 rounded-2xl px-5 py-4 text-white font-medium focus:outline-none focus:border-[#10b981] transition shadow-inner resize-none"
-              placeholder="Zusätzliche Notizen zum Auftrag..."
-            />
-          </div>
-
           {/* Status Toggle (MOVED TO BOTTOM) */}
           <div className="pt-4">
             <button 
@@ -234,10 +236,16 @@ export function JobEditClient({ job }: { job: {
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/90 to-transparent pointer-events-none z-50">
-        <div className="max-w-lg mx-auto">
+      <div className="fixed bottom-0 left-0 right-0 p-4 pb-[env(safe-area-inset-bottom,2rem)] bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/90 to-transparent pointer-events-none z-50 flex justify-center">
+        <div className="w-full max-w-lg mx-auto pointer-events-auto">
           <button 
-            onClick={() => handleSave(status, isPaid, paymentMethod)}
+            onClick={async () => {
+              const success = await handleSave(status, isPaid, paymentMethod);
+              if (success && status === 'DONE') {
+                router.refresh();
+                router.push('/admin');
+              }
+            }}
             disabled={isSaving}
             className="w-full pointer-events-auto bg-[#10b981] text-gray-950 px-6 py-4 rounded-[20px] font-black text-lg flex items-center justify-center gap-2 hover:bg-[#059669] active:scale-[0.98] shadow-2xl transition-all border border-[#10b981]"
           >
