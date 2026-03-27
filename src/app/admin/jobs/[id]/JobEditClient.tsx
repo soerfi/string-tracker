@@ -92,9 +92,10 @@ export function JobEditClient({ job }: { job: {
       success = await handleSave(newStatus, true, method);
     } else {
       if (status === 'COMPLETED') newStatus = 'READY';
+      // Reset payment method by sending explicitly null
       success = await handleSave(newStatus, false, null);
     }
-    if (success) {
+    if (success && newStatus === 'COMPLETED') {
       router.refresh();
       router.back();
     }
@@ -241,7 +242,7 @@ export function JobEditClient({ job }: { job: {
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 p-4 pb-[env(safe-area-inset-bottom,2rem)] bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/90 to-transparent pointer-events-none z-50 flex justify-center">
+      <div className="fixed bottom-0 left-0 right-0 p-4 pb-[env(safe-area-inset-bottom,2rem)] mb-20 md:mb-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/90 to-transparent pointer-events-none z-40 flex justify-center">
         <div className="w-full max-w-lg mx-auto pointer-events-auto">
           <button 
             onClick={async () => {
