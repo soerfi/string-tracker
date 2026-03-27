@@ -408,7 +408,7 @@ export function AdminForm({
             {/* STEP 3: JOB DETAILS */}
             {step === 3 && (
               <section className="space-y-6">
-                <div className="bg-[#161616] p-5 rounded-[20px] border border-white/5 shadow-lg space-y-5">
+                <div className="bg-[#161616] p-5 rounded-[20px] border border-white/5 shadow-lg space-y-5 overflow-hidden w-full max-w-full">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black tracking-widest text-[#10b981] uppercase ml-1">Gewählte Saite</label>
                     <CustomSelect
@@ -438,13 +438,13 @@ export function AdminForm({
                     </div>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-2 w-full max-w-full">
                     <label className="text-[10px] font-black tracking-widest text-[#10b981] uppercase ml-1">Fertigstellen bis</label>
                     <input 
                       type="date" 
                       value={deadline} 
                       onChange={(e) => setDeadline(e.target.value)}
-                      className="w-full bg-[#0a0a0a] border border-white/5 rounded-xl px-4 py-4 text-white font-medium focus:outline-none focus:border-[#10b981] transition [color-scheme:dark]"
+                      className="w-full min-w-0 max-w-[100%] block box-border appearance-none bg-[#0a0a0a] border border-white/5 rounded-xl px-4 py-4 text-white font-medium focus:outline-none focus:border-[#10b981] transition [color-scheme:dark]"
                     />
                   </div>
                 </div>
