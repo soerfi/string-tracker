@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, Edit2, Trash2, QrCode, Plus, Camera, CheckCi
 import Link from 'next/link';
 import { QRScanner } from '@/components/QRScanner';
 import { CustomSelect } from '@/components/CustomSelect';
+import { WheelPicker } from '@/components/WheelPicker';
 import { ConfirmModal } from '@/components/ConfirmModal';
 import { toast } from 'react-hot-toast';
 import clsx from 'clsx';
@@ -214,11 +215,11 @@ export function CustomerDetailClient({ initialCustomer, initialPresets }: { init
                          placeholder="Griffstärke"
                          options={['L0', 'L1', 'L2', 'L3', 'L4'].map(l => ({ value: l, label: l }))}
                        />
-                       <CustomSelect
+                       <WheelPicker
                          value={(racketForm.weight || 300).toString()}
                          onChange={v => setRacketForm({...racketForm, weight: parseInt(v)})}
-                         placeholder="Gewicht (g)"
-                         options={Array.from({ length: 41 }, (_, i) => 260 + i * 5).map(g => ({ value: g.toString(), label: `${g}g` }))}
+                         className="flex-1 max-w-[50%]"
+                         options={Array.from({ length: 201 }, (_, i) => 160 + i).map(g => ({ value: g.toString(), label: `${g}g` }))}
                        />
                      </div>
                      <input type="text" value={racketForm.qrCodeToken} onChange={e => setRacketForm({...racketForm, qrCodeToken: e.target.value})} className="w-full bg-[#10b981]/10 border border-[#10b981]/30 rounded-xl px-4 py-3 text-[#10b981] font-mono text-sm focus:outline-none" placeholder="QR Code Token" />
@@ -287,11 +288,11 @@ export function CustomerDetailClient({ initialCustomer, initialPresets }: { init
                          placeholder="Griffstärke"
                          options={['L0', 'L1', 'L2', 'L3', 'L4'].map(l => ({ value: l, label: l }))}
                        />
-                       <CustomSelect
+                       <WheelPicker
                          value={(newRacket.weight || 300).toString()}
                          onChange={v => setNewRacket({...newRacket, weight: parseInt(v)})}
-                         placeholder="Gewicht (g)"
-                         options={Array.from({ length: 41 }, (_, i) => 260 + i * 5).map(g => ({ value: g.toString(), label: `${g}g` }))}
+                         className="flex-1 max-w-[50%]"
+                         options={Array.from({ length: 201 }, (_, i) => 160 + i).map(g => ({ value: g.toString(), label: `${g}g` }))}
                        />
                     </div>
                     <button onClick={handleAddRacket} disabled={isAddingRacket || !newRacket.brand || !newRacket.model} className="w-full bg-[#10b981] disabled:opacity-50 text-gray-950 py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#059669] transition-all flex justify-center items-center gap-2">
