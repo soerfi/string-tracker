@@ -65,6 +65,10 @@ Welcome, future AI! You are working on "String Tracker", a modern Next.js CRM de
 - **Reports Engine:** Shipped a full `/admin/reports` module offering specific date-range filtering, revenue statistics, and instantaneous job history CSV Exports.
 - **UI & Auth Polish:** Fixed Safari overscroll layout breaks (`overscroll-behavior-y: none`), streamlined the Hub interface (open payments limited to 10 instances, removed obsolete hamburger/branding), and repaired conditional secure cookie handling for un-cached Admin redirects.
 
+## 📱 2026-03-27: UI Boundaries & Deep Darkmode
+- **Global Darkmode:** Lifted `color-scheme: dark;` out of the `@media` prefers-color-scheme block to force Safari date inputs & calendars into darkmode permanently, regardless of the user's OS settings.
+- **Customer View Privacy:** Updated `<BottomNav />` pathing logic to instantly `return null` on any route outside `/admin`. Customers scanning their Racket QR codes won't see the app's internal navigation menu anymore.
+
 ## 📱 2026-03-27: UI/UX Pro Max - iOS Safari Workarounds & Walk-Ins
 - **iOS Context Menu Override:** Since iOS 15, Safari ignores `size="1"` default native OS Wheels for generic text `<select>` boxes, instead generating a floating context menu. To achieve the classic Apple "Zahlenrad" (slot-machine slider picker) natively on web, the `WheelPicker.tsx` utilizes mathematically debounced `onScroll` functions paired with hardware-accelerated pure CSS `snap-y snap-mandatory`.
 - **True Pinch-to-Zoom Block:** iOS natively ignores `user-scalable="no"` in the viewport meta tag for accessibility reasons. The only iron-clad way to disable two-finger spread zooming is applying `touch-action: pan-x pan-y;` globally in `globals.css`.

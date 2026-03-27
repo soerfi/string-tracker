@@ -8,7 +8,8 @@ import clsx from 'clsx';
 export function BottomNav() {
   const pathname = usePathname();
   
-  if (pathname === '/admin/new') return null;
+  // Hide navigation on non-admin routes exactly, or specifically inside /admin/new
+  if (!pathname.startsWith('/admin') || pathname === '/admin/new') return null;
 
   const navItemClass = (path: string) => clsx(
     "flex flex-col items-center justify-center w-16 h-full transition-colors",
