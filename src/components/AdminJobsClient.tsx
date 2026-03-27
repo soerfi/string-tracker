@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Trash2, Wallet } from 'lucide-react';
 import { ConfirmModal } from './ConfirmModal';
@@ -22,6 +22,10 @@ interface JobType {
 
 export function AdminJobsClient({ initialJobs, hideActions = false, statusType = "ALL" }: { initialJobs: JobType[], hideActions?: boolean, statusType?: "PENDING" | "READY" | "COMPLETED" | "ALL" }) {
   const [jobs, setJobs] = useState(initialJobs);
+
+  useEffect(() => {
+    setJobs(initialJobs);
+  }, [initialJobs]);
 
   const [jobToDelete, setJobToDelete] = useState<string | null>(null);
 
@@ -69,12 +73,12 @@ export function AdminJobsClient({ initialJobs, hideActions = false, statusType =
           <div className="flex items-center justify-between relative z-10 w-full">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-[14px] bg-[#0a0a0a] border border-white/5 flex shrink-0 items-center justify-center text-[#10b981] font-black text-lg">
-                {job.player.name.charAt(0)}
+                {job.player?.name?.charAt(0) || '?'}
               </div>
               <div>
-                <div className="font-bold text-base leading-tight text-white truncate max-w-[120px] xs:max-w-[180px] sm:max-w-xs">{job.player.name}</div>
+                <div className="font-bold text-base leading-tight text-white truncate max-w-[120px] xs:max-w-[180px] sm:max-w-xs">{job.player?.name || 'Unbekannt'}</div>
                 <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-0.5 truncate max-w-[120px] xs:max-w-[180px] sm:max-w-xs">
-                  {job.racketBrand || job.player.racketBrand} {job.racketModel || job.player.racketModel}
+                  {job.racketBrand || job.player?.racketBrand} {job.racketModel || job.player?.racketModel}
                 </div>
               </div>
             </div>
@@ -92,7 +96,7 @@ export function AdminJobsClient({ initialJobs, hideActions = false, statusType =
 
           <div className="flex items-center justify-between border-t border-white/5 pt-3 mt-1">
             <div className="text-xs font-bold text-[#10b981] truncate pl-1 pr-2">
-               {job.string.brand} {job.string.model}
+               {job.string?.brand} {job.string?.model}
             </div>
             
             {!hideActions && (
