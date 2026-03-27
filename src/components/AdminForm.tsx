@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { QRScanner } from './QRScanner';
 import { CustomSelect } from './CustomSelect';
+import { NativeWheelSelect } from './NativeWheelSelect';
 import { toast } from 'react-hot-toast';
 import clsx from 'clsx';
 
@@ -377,13 +378,12 @@ export function AdminForm({
                         </div>
                         <div>
                           <label className="text-[10px] font-black tracking-widest text-gray-500 uppercase ml-1 mb-1 block">Gewicht (g)</label>
-                          <CustomSelect 
-                            value={racketWeight}
-                            onChange={(v) => setRacketWeight(v)}
-                            placeholder="Gewicht"
-                            options={Array.from({length: 33}, (_, i) => String(200 + i * 5)).map(w => ({ value: w, label: `${w}g` }))}
-                          />
-                        </div>
+                          <NativeWheelSelect 
+                      value={racketWeight.toString()} 
+                      onChange={v => setRacketWeight(parseInt(v))} 
+                      placeholder="Gewicht (g)" 
+                      options={Array.from({ length: 201 }, (_, i) => 160 + i).map(g => ({ value: g.toString(), label: `${g}g` }))} 
+                    />      </div>
                       </div>
                     )}
                   </div>
