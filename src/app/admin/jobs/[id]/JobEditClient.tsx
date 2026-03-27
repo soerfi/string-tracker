@@ -241,25 +241,6 @@ export function JobEditClient({ job }: { job: {
           </div>
         </div>
       </div>
-
-      <div className="fixed bottom-0 left-0 right-0 p-4 pb-[env(safe-area-inset-bottom,2rem)] mb-20 md:mb-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/90 to-transparent pointer-events-none z-40 flex justify-center">
-        <div className="w-full max-w-lg mx-auto pointer-events-auto">
-          <button 
-            onClick={async () => {
-              const success = await handleSave(status, isPaid, paymentMethod);
-              if (success && (status === 'COMPLETED' || status === 'DONE')) {
-                router.refresh();
-                router.back();
-              }
-            }}
-            disabled={isSaving}
-            className="w-full pointer-events-auto bg-[#10b981] text-gray-950 px-6 py-4 rounded-[20px] font-black text-lg flex items-center justify-center gap-2 hover:bg-[#059669] active:scale-[0.98] shadow-2xl transition-all border border-[#10b981]"
-          >
-            <Save className="w-5 h-5" />
-            {isSaving ? "Speichert..." : "Änderungen speichern"}
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
