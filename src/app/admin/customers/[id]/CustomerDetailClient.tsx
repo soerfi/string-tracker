@@ -214,12 +214,11 @@ export function CustomerDetailClient({ initialCustomer, initialPresets }: { init
                          placeholder="Griffstärke"
                          options={['L0', 'L1', 'L2', 'L3', 'L4'].map(l => ({ value: l, label: l }))}
                        />
-                       <input 
-                         type="number" 
-                         value={racketForm.weight} 
-                         onChange={e => setRacketForm({...racketForm, weight: parseInt(e.target.value) || 300})} 
-                         className="w-full bg-[#10b981]/10 border border-[#10b981]/30 rounded-xl px-4 py-3 text-[#10b981] font-mono text-sm focus:outline-none" 
-                         placeholder="Gewicht (g)" 
+                       <CustomSelect
+                         value={(racketForm.weight || 300).toString()}
+                         onChange={v => setRacketForm({...racketForm, weight: parseInt(v)})}
+                         placeholder="Gewicht (g)"
+                         options={Array.from({ length: 41 }, (_, i) => 260 + i * 5).map(g => ({ value: g.toString(), label: `${g}g` }))}
                        />
                      </div>
                      <input type="text" value={racketForm.qrCodeToken} onChange={e => setRacketForm({...racketForm, qrCodeToken: e.target.value})} className="w-full bg-[#10b981]/10 border border-[#10b981]/30 rounded-xl px-4 py-3 text-[#10b981] font-mono text-sm focus:outline-none" placeholder="QR Code Token" />
@@ -288,12 +287,11 @@ export function CustomerDetailClient({ initialCustomer, initialPresets }: { init
                          placeholder="Griffstärke"
                          options={['L0', 'L1', 'L2', 'L3', 'L4'].map(l => ({ value: l, label: l }))}
                        />
-                       <input 
-                         type="number" 
-                         value={newRacket.weight} 
-                         onChange={e => setNewRacket({...newRacket, weight: parseInt(e.target.value) || 300})} 
-                         className="w-full bg-[#0a0a0a] border border-white/5 rounded-xl px-4 py-3 text-white font-medium text-sm focus:outline-none focus:border-[#10b981] transition-colors" 
-                         placeholder="Gewicht (g)" 
+                       <CustomSelect
+                         value={(newRacket.weight || 300).toString()}
+                         onChange={v => setNewRacket({...newRacket, weight: parseInt(v)})}
+                         placeholder="Gewicht (g)"
+                         options={Array.from({ length: 41 }, (_, i) => 260 + i * 5).map(g => ({ value: g.toString(), label: `${g}g` }))}
                        />
                     </div>
                     <button onClick={handleAddRacket} disabled={isAddingRacket || !newRacket.brand || !newRacket.model} className="w-full bg-[#10b981] disabled:opacity-50 text-gray-950 py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#059669] transition-all flex justify-center items-center gap-2">
