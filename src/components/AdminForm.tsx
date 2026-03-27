@@ -408,7 +408,7 @@ export function AdminForm({
             {/* STEP 3: JOB DETAILS */}
             {step === 3 && (
               <section className="space-y-6">
-                <div className="bg-[#161616] p-5 rounded-[20px] border border-white/5 shadow-lg space-y-5 overflow-hidden w-full max-w-full">
+                <div className="bg-[#161616] p-5 rounded-[20px] border border-white/5 shadow-lg space-y-5">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black tracking-widest text-[#10b981] uppercase ml-1">Gewählte Saite</label>
                     <CustomSelect
