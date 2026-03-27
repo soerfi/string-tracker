@@ -379,8 +379,8 @@ export function AdminForm({
                         <div>
                           <label className="text-[10px] font-black tracking-widest text-gray-500 uppercase ml-1 mb-1 block">Gewicht (g)</label>
                           <NativeWheelSelect 
-                      value={racketWeight.toString()} 
-                      onChange={v => setRacketWeight(parseInt(v))} 
+                      value={racketWeight} 
+                      onChange={v => setRacketWeight(v)} 
                       placeholder="Gewicht (g)" 
                       options={Array.from({ length: 201 }, (_, i) => 160 + i).map(g => ({ value: g.toString(), label: `${g}g` }))} 
                     />      </div>
