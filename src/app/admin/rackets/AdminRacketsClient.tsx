@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, Plus, Trash2, ShieldCheck } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { ConfirmModal } from '@/components/ConfirmModal';
 
 export function AdminRacketsClient({ initialPresets }: { initialPresets: { id: string, brand: string, model: string }[] }) {
   const router = useRouter();
@@ -11,6 +12,7 @@ export function AdminRacketsClient({ initialPresets }: { initialPresets: { id: s
   const [brand, setBrand] = useState("");
   const [model, setModel] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [deletePresetId, setDeletePresetId] = useState<string|null>(null);
 
   // Group by brand
   const grouped = presets.reduce((acc, curr) => {
@@ -45,29 +47,28 @@ export function AdminRacketsClient({ initialPresets }: { initialPresets: { id: s
     setIsSaving(false);
   };
 
-  const handleDelete = (id: string) => {
-    toast((t) => (
-      <div className="flex flex-col gap-3 font-sans w-full min-w-[200px]">
-        <div className="font-bold text-sm">Preset wirklich löschen?</div>
-        <div className="flex gap-2">
-          <button className="flex-1 bg-red-500 text-white px-3 py-2 rounded-lg text-xs font-bold" onClick={async () => {
-            toast.dismiss(t.id);
-            try {
-              const res = await fetch(`/api/rackets/presets/${id}`, { method: 'DELETE' });
-              if (res.ok) {
-                setPresets(presets.filter(p => p.id !== id));
-                toast.success("Preset gelöscht");
-              }
-            } catch(e) { }
-          }}>Löschen</button>
-          <button className="flex-1 bg-[#161616] border border-white/10 px-3 py-2 rounded-lg text-xs font-bold" onClick={() => toast.dismiss(t.id)}>Abbrechen</button>
-        </div>
-      </div>
-    ), { duration: Infinity });
+  const confirmDelete = async () => {
+    if (!deletePresetId) return;
+    try {
+      const res = await fetch(`/api/rackets/presets/${deletePresetId}`, { method: 'DELETE' });
+      if (res.ok) {
+        setPresets(presets.filter(p => p.id !== deletePresetId));
+        toast.success("Preset gelöscht");
+      }
+    } catch(e) { }
+    setDeletePresetId(null);
   };
 
   return (
     <div className="max-w-2xl mx-auto pb-24 font-sans px-6">
+      <ConfirmModal 
+        isOpen={!!deletePresetId} 
+        title="Preset löschen?" 
+        message="Möchtest du dieses Racket-Modell wirklich aus der Liste entfernen?" 
+        onConfirm={confirmDelete} 
+        onCancel={() => setDeletePresetId(null)} 
+      />
+
       <div className="flex items-center gap-4 mb-8 pt-6">
         <button onClick={() => router.push('/admin/settings')} className="w-10 h-10 bg-[#161616] rounded-xl flex items-center justify-center border border-white/5 active:scale-95 transition-all text-gray-400 hover:text-white hover:bg-white/5"><ChevronLeft className="w-6 h-6" /></button>
         <div>
@@ -104,7 +105,7 @@ export function AdminRacketsClient({ initialPresets }: { initialPresets: { id: s
               {grouped[b].map(p => (
                 <div key={p.id} className="flex items-center justify-between bg-[#0a0a0a] border border-white/5 rounded-xl p-3 shadow-sm group hover:border-[#10b981]/30 transition">
                   <span className="text-sm font-bold text-gray-200">{p.model}</span>
-                  <button onClick={() => handleDelete(p.id)} className="text-gray-500 hover:text-red-500 focus:outline-none p-1">
+                  <button onClick={() => setDeletePresetId(p.id)} className="text-gray-500 hover:text-red-500 focus:outline-none p-1">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>

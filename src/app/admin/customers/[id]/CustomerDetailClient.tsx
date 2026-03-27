@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, Edit2, Trash2, QrCode, Plus, Camera, CheckCi
 import Link from 'next/link';
 import { QRScanner } from '@/components/QRScanner';
 import { CustomSelect } from '@/components/CustomSelect';
+import { ConfirmModal } from '@/components/ConfirmModal';
 import { toast } from 'react-hot-toast';
 import clsx from 'clsx';
 
@@ -26,6 +27,9 @@ export function CustomerDetailClient({ initialCustomer, initialPresets }: { init
   const [isScanning, setIsScanning] = useState(false);
   const [scannedToken, setScannedToken] = useState("");
 
+  const [deleteCustomerConfirm, setDeleteCustomerConfirm] = useState(false);
+  const [deleteRacketConfirm, setDeleteRacketConfirm] = useState<{id: string, name: string}|null>(null);
+
   const saveEdit = async () => {
     setIsSaving(true);
     try {
@@ -43,25 +47,15 @@ export function CustomerDetailClient({ initialCustomer, initialPresets }: { init
     setIsSaving(false);
   };
 
-  const deleteCustomer = () => {
-    toast((t) => (
-      <div className="flex flex-col gap-3 font-sans w-full min-w-[200px]">
-        <div className="font-bold text-sm text-balance">Kunde & Aufträge löschen?</div>
-        <div className="flex gap-2 w-full">
-          <button className="flex-1 bg-red-500 text-white px-3 py-2 rounded-lg text-xs font-bold" onClick={async () => {
-            toast.dismiss(t.id);
-            try {
-              const res = await fetch(`/api/players/${customer.id}`, { method: 'DELETE' });
-              if (res.ok) {
-                 toast.success("Gelöscht");
-                 router.push('/admin/customers');
-              }
-            } catch(err) { console.error(err); }
-          }}>Löschen</button>
-          <button className="flex-1 bg-[#161616] border border-white/10 px-3 py-2 rounded-lg text-xs font-bold" onClick={() => toast.dismiss(t.id)}>Abbrechen</button>
-        </div>
-      </div>
-    ), { duration: Infinity });
+  const deleteCustomer = async () => {
+    try {
+      const res = await fetch(`/api/players/${customer.id}`, { method: 'DELETE' });
+      if (res.ok) {
+         toast.success("Gelöscht");
+         router.push('/admin/customers');
+      }
+    } catch(err) { console.error(err); }
+    setDeleteCustomerConfirm(false);
   };
 
   const handleScan = async (decodedText: string) => {
@@ -118,25 +112,16 @@ export function CustomerDetailClient({ initialCustomer, initialPresets }: { init
     } catch(err) { console.error(err); }
   };
 
-  const deleteRacket = (racketId: string) => {
-    toast((t) => (
-      <div className="flex flex-col gap-3 font-sans w-full min-w-[200px]">
-        <div className="font-bold text-sm text-balance">Racket wirklich löschen? Historie bleibt.</div>
-        <div className="flex gap-2 w-full">
-          <button className="flex-1 bg-red-500 text-white px-3 py-2 rounded-lg text-xs font-bold" onClick={async () => {
-            toast.dismiss(t.id);
-            try {
-              const res = await fetch(`/api/rackets/${racketId}`, { method: 'DELETE' });
-              if (res.ok) {
-                setCustomer({ ...customer, rackets: customer.rackets.filter((r: any) => r.id !== racketId) });
-                toast.success("Racket entfernt");
-              }
-            } catch(err) { console.error(err); }
-          }}>Löschen</button>
-          <button className="flex-1 bg-[#161616] border border-white/10 px-3 py-2 rounded-lg text-xs font-bold" onClick={() => toast.dismiss(t.id)}>Abbrechen</button>
-        </div>
-      </div>
-    ), { duration: Infinity });
+  const deleteRacket = async () => {
+    if (!deleteRacketConfirm) return;
+    try {
+      const res = await fetch(`/api/rackets/${deleteRacketConfirm.id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setCustomer({ ...customer, rackets: customer.rackets.filter((r: any) => r.id !== deleteRacketConfirm.id) });
+        toast.success("Racket entfernt");
+      }
+    } catch(err) { console.error(err); }
+    setDeleteRacketConfirm(null);
   };
 
   const tabClass = (tabId: string) => clsx(
@@ -146,6 +131,21 @@ export function CustomerDetailClient({ initialCustomer, initialPresets }: { init
 
   return (
     <div className="max-w-2xl mx-auto pb-24 font-sans">
+      <ConfirmModal 
+        isOpen={deleteCustomerConfirm} 
+        title="Kunde löschen" 
+        message={`Möchtest du "${customer.name}" und alle verbundenen Rackets sowie Auftrags-Historien wirklich löschen? Dieser Vorgang kann nicht rückgängig gemacht werden.`} 
+        onConfirm={deleteCustomer} 
+        onCancel={() => setDeleteCustomerConfirm(false)} 
+      />
+      <ConfirmModal 
+        isOpen={!!deleteRacketConfirm} 
+        title="Racket löschen" 
+        message={`Möchtest du das Racket "${deleteRacketConfirm?.name}" aus dem Profil entfernen? Bisherige Aufträge bleiben in der Historie bestehen.`} 
+        onConfirm={deleteRacket} 
+        onCancel={() => setDeleteRacketConfirm(null)} 
+      />
+
       <div className="flex items-center gap-4 mb-8 pt-4">
         <button onClick={() => router.push('/admin/customers')} className="w-10 h-10 bg-[#161616] rounded-xl flex items-center justify-center border border-white/5 active:scale-95 transition-all text-gray-400 hover:text-white hover:bg-white/5"><ChevronLeft className="w-6 h-6" /></button>
         <div>
@@ -179,7 +179,7 @@ export function CustomerDetailClient({ initialCustomer, initialPresets }: { init
              </button>
              
              <div className="pt-6 mt-6 border-t border-white/5 border-dashed">
-                <button onClick={deleteCustomer} className="w-full bg-red-500/10 text-red-500 py-4 rounded-xl font-black text-sm uppercase tracking-widest flex justify-center hover:bg-red-500 hover:text-white active:scale-[0.98] transition-all">
+                <button onClick={() => setDeleteCustomerConfirm(true)} className="w-full bg-red-500/10 text-red-500 py-4 rounded-xl font-black text-sm uppercase tracking-widest flex justify-center hover:bg-red-500 hover:text-white active:scale-[0.98] transition-all">
                   Kunde löschen
                 </button>
              </div>
@@ -243,7 +243,7 @@ export function CustomerDetailClient({ initialCustomer, initialPresets }: { init
                          <a href={`/p/${racket.qrCodeToken}`} target="_blank" className="w-full sm:w-auto bg-[#10b981]/10 text-[#10b981] px-5 py-3 rounded-xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[#10b981]/20 transition-colors border border-[#10b981]/20">
                            <QrCode className="w-4 h-4" /> Ansicht
                          </a>
-                         <button onClick={() => deleteRacket(racket.id)} className="w-full sm:w-auto text-gray-400 hover:text-red-500 text-xs font-bold flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white/5 hover:bg-red-500/10 transition">
+                         <button onClick={() => setDeleteRacketConfirm({ id: racket.id, name: `${racket.brand} ${racket.model}`})} className="w-full sm:w-auto text-gray-400 hover:text-red-500 text-xs font-bold flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white/5 hover:bg-red-500/10 transition">
                            <Trash2 className="w-4 h-4" /> Löschen
                          </button>
                      </div>

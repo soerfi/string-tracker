@@ -4,54 +4,53 @@ import { useState, useEffect } from "react";
 import { QrCode, Download } from "lucide-react";
 import { generateQrBatch, getBatchStats } from "./actions";
 import { toast } from "react-hot-toast";
+import { ConfirmModal } from "@/components/ConfirmModal";
 
 export default function QrBatchPage() {
   const [amount, setAmount] = useState(500);
   const [isGenerating, setIsGenerating] = useState(false);
   const [stats, setStats] = useState({ total: 0, printed: 0, assigned: 0 });
+  const [confirmGenerate, setConfirmGenerate] = useState(false);
 
   useEffect(() => {
     getBatchStats().then(setStats).catch(console.error);
   }, []);
 
-  const handleGenerate = () => {
-    toast((t) => (
-      <div className="flex flex-col gap-3 font-sans w-full min-w-[200px]">
-        <div className="font-bold text-sm text-balance">{amount} neue Codes in der DB reservieren und als CSV exportieren?</div>
-        <div className="flex gap-2 w-full">
-          <button className="flex-1 bg-[#10b981] text-gray-950 px-3 py-2 rounded-lg text-xs font-bold" onClick={async () => {
-            toast.dismiss(t.id);
-            setIsGenerating(true);
-            const result = await generateQrBatch(amount);
-            if (result.success && result.codes) {
-              let csvContent = "data:text/csv;charset=utf-8,ID,URL\n";
-              result.codes.forEach(code => {
-                csvContent += `${code},https://tennis.soerfi.com/p/${code}\n`;
-              });
-              
-              const encodedUri = encodeURI(csvContent);
-              const link = document.createElement("a");
-              link.setAttribute("href", encodedUri);
-              link.setAttribute("download", `qr_batch_${new Date().toISOString().split('T')[0]}.csv`);
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
-              
-              getBatchStats().then(setStats);
-              toast.success("Erfolgreich generiert");
-            } else {
-              toast.error(result.error || "Ein Fehler ist aufgetreten.");
-            }
-            setIsGenerating(false);
-          }}>Generieren</button>
-          <button className="flex-1 bg-[#161616] border border-white/10 px-3 py-2 rounded-lg text-xs font-bold" onClick={() => toast.dismiss(t.id)}>Abbrechen</button>
-        </div>
-      </div>
-    ), { duration: Infinity });
+  const executeGenerate = async () => {
+    setConfirmGenerate(false);
+    setIsGenerating(true);
+    const result = await generateQrBatch(amount);
+    if (result.success && result.codes) {
+      let csvContent = "data:text/csv;charset=utf-8,ID,URL\n";
+      result.codes.forEach(code => {
+        csvContent += `${code},https://tennis.soerfi.com/p/${code}\n`;
+      });
+      
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `qr_batch_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      getBatchStats().then(setStats);
+      toast.success("Erfolgreich generiert");
+    } else {
+      toast.error(result.error || "Ein Fehler ist aufgetreten.");
+    }
+    setIsGenerating(false);
   };
 
   return (
     <div className="max-w-xl mx-auto space-y-8 p-4 pt-12">
+      <ConfirmModal 
+        isOpen={confirmGenerate} 
+        title="QR-Codes generieren" 
+        message={`${amount} neue Codes in der DB reservieren und als CSV exportieren?`} 
+        onConfirm={executeGenerate} 
+        onCancel={() => setConfirmGenerate(false)} 
+      />
       <div>
          <h1 className="text-3xl font-black text-white flex items-center gap-3">
            <QrCode className="w-8 h-8 text-[#10b981]" /> QR-Code Generator
@@ -89,7 +88,7 @@ export default function QrBatchPage() {
            </div>
 
            <button 
-             onClick={handleGenerate} 
+             onClick={() => setConfirmGenerate(true)} 
              disabled={isGenerating || amount <= 0}
              className="w-full bg-[#10b981] disabled:opacity-50 disabled:grayscale text-gray-950 font-black py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-[#059669] transition-all shadow-lg shadow-[#10b981]/20 active:scale-95"
            >
