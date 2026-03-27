@@ -44,7 +44,7 @@ export async function POST(req: Request) {
       });
     }
 
-    const token = uuidv4();
+    const token = body.qrCodeToken || uuidv4();
 
     const { racketId, stringId, tensionMain, tensionCross, notes, deadline, grommetsOk, gripOk, changeOvergrip, racketBrand, racketModel, racketGrip, racketWeight } = body;
 
@@ -57,7 +57,8 @@ export async function POST(req: Request) {
           brand: racketBrand,
           model: racketModel,
           gripSize: racketGrip || "L3",
-          weight: racketWeight ? parseInt(racketWeight) : 300
+          weight: racketWeight ? parseInt(racketWeight.toString()) : 300,
+          qrCodeToken: token
         }
       });
       finalRacketId = newRacket.id;

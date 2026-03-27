@@ -58,6 +58,7 @@ export function AdminForm({
   const [tensionCross, setTensionCross] = useState("24.0");
   const [deadline, setDeadline] = useState("");
   const [notes, setNotes] = useState("");
+  const [scannedInitialToken, setScannedInitialToken] = useState<string | null>(null);
 
   const dateInputRef = useRef<HTMLInputElement>(null);
 
@@ -166,11 +167,22 @@ export function AdminForm({
             setStep(3); // Jump straight to stringing!
             return;
           }
+        } else {
+            // Check if it's an unassigned QR code to create a NEW racket
+            const emptyRes = await fetch(`/api/qr/validate?token=${token}`);
+            if (emptyRes.ok) {
+                toast.success("Neuer leerer QR-Code erkannt! Bitte Kunde & Racket erfassen.");
+                setScannedInitialToken(token);
+                setCustomerId("new");
+                setRacketId("new");
+                setStep(1);
+                return;
+            }
         }
       } catch (err) {
         console.error("Live lookup failed", err);
       }
-      toast.error("QR Code leider nicht im System als Racket registriert.");
+      toast.error("QR Code leider nicht im System registriert.");
     }
   };
 
@@ -211,7 +223,8 @@ export function AdminForm({
         stringId,
         tensionMain: tensionMain ? parseFloat(tensionMain) : null,
         tensionCross: tensionCross ? parseFloat(tensionCross) : null,
-        notes, deadline, grommetsOk, gripOk, changeOvergrip
+        notes, deadline, grommetsOk, gripOk, changeOvergrip,
+        qrCodeToken: scannedInitialToken
       };
 
       const res = await fetch('/api/jobs', {
@@ -254,13 +267,13 @@ export function AdminForm({
   }
 
   return (
-    <div className="max-w-md mx-auto flex flex-col h-[100dvh] bg-[#0a0a0a] font-sans relative">
+    <div className="max-w-md mx-auto flex flex-col min-h-[100dvh] bg-[#0a0a0a] font-sans relative">
       {isScanning && (
         <QRScanner onScan={handleScan} onClose={() => setIsScanning(false)} title="Racket scannen" />
       )}
 
       {/* Modern Header & Progress */}
-      <header className="px-6 pt-6 pb-4 bg-[#0a0a0a] z-10 sticky top-0">
+      <header className="px-6 pt-6 pb-4 bg-[#0a0a0a] z-30 sticky top-0">
         <div className="flex items-center justify-between mb-6">
           <button onClick={() => step > 1 ? prevStep() : router.back()} className="w-10 h-10 bg-[#161616] border border-white/5 rounded-2xl flex items-center justify-center text-gray-400 hover:text-white transition active:scale-95">
             {step > 1 ? <ChevronLeft className="w-6 h-6" /> : <X className="w-6 h-6" />}
@@ -283,8 +296,8 @@ export function AdminForm({
       </header>
 
       {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto px-6 pb-32">
-        <AnimatePresence mode="wait">
+      <div className="flex-1 px-6 pb-32">
+        <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={step}
             initial={{ opacity: 0, x: 20 }}
